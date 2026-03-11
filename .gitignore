@@ -1,0 +1,38 @@
+# Compiled binaries
+*.o
+*.so
+*.a
+bin/*
+build/*
+
+# Executables
+test_*
+vpn_server
+vpn_client
+chat_server
+chat_client
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and data
+*.log
+*.pcap
+*.csv
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Keep directory structure but ignore contents
+!bin/.gitkeep
+!build/.gitkeep
