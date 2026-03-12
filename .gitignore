@@ -6,7 +6,9 @@ bin/*
 build/*
 
 # Executables
-test_*
+# Executables (binaries only, not source files)
+bin/test_*
+build/test_*
 vpn_server
 vpn_client
 chat_server
