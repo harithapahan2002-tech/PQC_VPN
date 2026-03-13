@@ -14,13 +14,14 @@ COMMON_SRC = $(SRC_COMMON)/pqc_common.c $(SRC_COMMON)/pqc_crypto.c
 # VPN source files
 VPN_SRC = $(SRC_VPN)/tun.c $(SRC_VPN)/udp_support.c
 
-.PHONY: all clean test dirs help
+.PHONY: all clean test dirs help vpn
 
-all: dirs test_foundation test_tun test_udp
+all: dirs test_foundation test_tun test_udp vpn
 
 dirs:
 	@mkdir -p $(BIN_DIR)
 
+# Tests
 test_foundation: $(SRC_COMMON)/test_foundation.c $(COMMON_SRC)
 	$(CC) $(CFLAGS) -o $(BIN_DIR)/$@ $^ $(LDFLAGS)
 	@echo "✅ Built: $(BIN_DIR)/test_foundation"
@@ -32,6 +33,17 @@ test_tun: $(SRC_VPN)/test_tun.c $(SRC_VPN)/tun.c
 test_udp: $(SRC_VPN)/test_udp.c $(COMMON_SRC) $(SRC_VPN)/udp_support.c
 	$(CC) $(CFLAGS) -o $(BIN_DIR)/$@ $^ $(LDFLAGS)
 	@echo "✅ Built: $(BIN_DIR)/test_udp"
+
+# VPN programs
+vpn: vpn_server vpn_client
+
+vpn_server: $(SRC_VPN)/vpn_server.c $(COMMON_SRC) $(VPN_SRC)
+	$(CC) $(CFLAGS) -o $(BIN_DIR)/$@ $^ $(LDFLAGS)
+	@echo "✅ Built: $(BIN_DIR)/vpn_server"
+
+vpn_client: $(SRC_VPN)/vpn_client.c $(COMMON_SRC) $(VPN_SRC)
+	$(CC) $(CFLAGS) -o $(BIN_DIR)/$@ $^ $(LDFLAGS)
+	@echo "✅ Built: $(BIN_DIR)/vpn_client"
 
 test: test_foundation test_udp
 	@echo ""
@@ -50,12 +62,11 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "  all              - Build everything (default)"
-	@echo "  test             - Run foundation and UDP tests"
-	@echo "  test_foundation  - Build foundation test"
-	@echo "  test_tun         - Build TUN test"
-	@echo "  test_udp         - Build UDP test"
+	@echo "  vpn              - Build VPN server and client"
+	@echo "  test             - Run automated tests"
 	@echo "  clean            - Remove build artifacts"
 	@echo ""
 	@echo "Usage:"
-	@echo "  make test                          - Run automated tests"
-	@echo "  sudo bin/test_tun                  - Test TUN (needs root)"
+	@echo "  make vpn                           - Build VPN"
+	@echo "  sudo bin/vpn_server                - Run server"
+	@echo "  sudo bin/vpn_client                - Run client (another terminal)"
