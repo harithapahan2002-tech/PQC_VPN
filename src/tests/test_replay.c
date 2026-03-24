@@ -178,17 +178,26 @@ static void test_last_packet_in_window(void) {
 static void test_one_inside_window_boundary(void) {
     TEST("Window: packet one inside window boundary (diff = window-1) accepted");
 
-    uint64_t expected = 0, bitmap = 0;
+    // We need a sequence that is SEQUENCE_WINDOW-1 behind expected
+    // but was NEVER previously received (bitmap bit is clear).
+    //
+    // Previous approach: advance 0..63 in order, then try CS(1).
+    // Problem: seq 1 was received in-order during that loop so its bit
+    // is legitimately set — it IS a duplicate, not an error.
+    //
+    // Fix: initialise expected = SEQUENCE_WINDOW with a zero bitmap,
+    // as if the session started at seq 64 with no prior history.
+    // seq 1 is then 63 behind, never seen → should accept.
+    uint64_t expected = SEQUENCE_WINDOW;  // 64
+    uint64_t bitmap   = 0;               // no packets recorded yet
 
-    // Advance to SEQUENCE_WINDOW - 1 (seq 63 accepted, expected = 64)
-    for (uint64_t i = 0; i < SEQUENCE_WINDOW; i++) {
-        ASSERT(CS(i) == 1, "failed advancing sequence");
-    }
-
-    // seq 1 is SEQUENCE_WINDOW - 1 = 63 packets behind expected (64)
-    // diff = 64 - 1 = 63 which is < SEQUENCE_WINDOW (64) → should accept
+    // diff = 64 - 1 = 63, which is < SEQUENCE_WINDOW (64) → accept
     ASSERT(CS(1) == 1,
-           "seq 1 (SEQUENCE_WINDOW-1 behind) should be accepted");
+           "seq 1 (SEQUENCE_WINDOW-1 behind, never seen) should be accepted");
+
+    // Attempting seq 1 again must now be rejected (bitmap bit is set)
+    ASSERT(CS(1) == 0,
+           "seq 1 second attempt should be rejected as duplicate");
     PASS();
 }
 
