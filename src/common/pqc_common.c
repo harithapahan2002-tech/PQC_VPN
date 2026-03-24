@@ -247,8 +247,16 @@ int check_sequence(uint64_t  received_seq,
     // Case 1: Exact match — the packet we were waiting for
     // -----------------------------------------------------------------------
     if (received_seq == *expected_seq) {
+        // Shift bitmap left by 1 and mark bit 0 to record this packet.
+        // This preserves the history of recently-seen sequences so that
+        // the immediately prior sequence (received_seq - 1) can still be
+        // detected as a duplicate if replayed.
+        //
+        // OLD code used *seq_bitmap = 0 here, which wiped all history on
+        // every in-order packet — causing replay and duplicate detection
+        // to fail for any packet within one step of the current position.
+        *seq_bitmap   = (*seq_bitmap << 1) | 1ULL;
         *expected_seq = received_seq + 1;
-        *seq_bitmap   = 0;
         return 1;
     }
 
@@ -259,11 +267,8 @@ int check_sequence(uint64_t  received_seq,
         uint64_t diff = received_seq - *expected_seq;
 
         if (diff >= SEQUENCE_WINDOW) {
-            // OLD behaviour: accept and jump forward with a warning.
-            // NEW behaviour: reject — a jump this large is far more
-            // consistent with an injection or desync attack than legitimate
-            // reordering. The peer should never be this far ahead under
-            // normal conditions.
+            // Reject — a jump this large is far more consistent with an
+            // injection or desync attack than legitimate reordering.
             fprintf(stderr, "❌ Sequence jump too large: expected %lu, "
                             "got %lu (diff %lu >= window %d) — rejected\n",
                     (unsigned long)*expected_seq,
@@ -273,8 +278,8 @@ int check_sequence(uint64_t  received_seq,
             return 0;
         }
 
-        // Within window: shift bitmap left by diff, mark new seq as seen,
-        // advance the expected pointer.
+        // Within window: shift bitmap left by diff (sliding the window
+        // forward), mark bit 0 for the new packet, advance expected.
         *seq_bitmap   = (*seq_bitmap << diff) | 1ULL;
         *expected_seq = received_seq + 1;
         return 1;
@@ -286,7 +291,16 @@ int check_sequence(uint64_t  received_seq,
     // received_seq < *expected_seq here
     uint64_t diff = *expected_seq - received_seq;
 
-    if (diff > SEQUENCE_WINDOW) {
+    if (diff >= SEQUENCE_WINDOW) {
+        // diff == SEQUENCE_WINDOW means the packet sits exactly at the edge —
+        // bit position would be SEQUENCE_WINDOW-1, which is the last valid
+        // slot. However RFC 4303 treats the boundary as outside the window,
+        // so we reject here. This also avoids a 1ULL << 63 shift on a
+        // 64-bit bitmap when SEQUENCE_WINDOW == 64.
+        //
+        // OLD code used diff > SEQUENCE_WINDOW, which accepted the boundary
+        // packet and then attempted a shift of exactly 63 bits — valid but
+        // inconsistent with the window semantics.
         // Too old — definitely a replay
         fprintf(stderr, "❌ Replay detected: seq %lu is %lu packets behind "
                         "expected %lu — rejected\n",
@@ -297,7 +311,9 @@ int check_sequence(uint64_t  received_seq,
     }
 
     // Within the window — check the bitmap for duplicates.
-    // bit_pos 0 = expected_seq - 1, bit_pos 1 = expected_seq - 2, etc.
+    // Bit layout: bit 0 = expected_seq-1 (most recent), bit N = expected_seq-N-1
+    // diff >= 1 here (received_seq < expected_seq), so bit_pos >= 0.
+    // diff < SEQUENCE_WINDOW (64) so bit_pos <= 62 — safe for 1ULL << bit_pos.
     uint64_t bit_pos = diff - 1;
 
     if (*seq_bitmap & (1ULL << bit_pos)) {
