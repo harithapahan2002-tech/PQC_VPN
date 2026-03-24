@@ -1,40 +1,76 @@
-# Compiled binaries
-*.o
-*.so
-*.a
-bin/*
-build/*
+# PQ-VPN .gitignore
 
-# Executables
-# Executables (binaries only, not source files)
-bin/test_*
-build/test_*
-vpn_server
-vpn_client
-chat_server
-chat_client
+# ============================================================================
+# BUILD ARTEFACTS
+# ============================================================================
 
-# IDE files
+bin/
+obj/
+
+# ============================================================================
+# SECURITY — NEVER COMMIT THESE
+# ============================================================================
+
+# Pre-shared key — must be distributed out-of-band, never via git
+psk.conf
+
+# Any accidentally generated key or secret files
+*.key
+*.pem
+*.der
+*.p12
+
+# ============================================================================
+# TEST TEMPORARIES
+# ============================================================================
+
+# Temp PSK files written by test_auth.c
+/tmp/test_psk*.conf
+/tmp/test_generated_psk*.conf
+/tmp/test_mac_*.conf
+
+# ============================================================================
+# EDITOR AND OS
+# ============================================================================
+
+# VSCode
 .vscode/
-.idea/
+*.code-workspace
+
+# Vim
 *.swp
 *.swo
 *~
 
-# OS files
+# CLion / JetBrains
+.idea/
+cmake-build-*/
+
+# macOS
 .DS_Store
-Thumbs.db
 
-# Logs and data
+# Linux core dumps
+core
+core.*
+vgcore.*
+
+# ============================================================================
+# SANITISER / PROFILING OUTPUT
+# ============================================================================
+
+# AddressSanitizer / UBSan logs
 *.log
-*.pcap
-*.csv
+asan.log*
 
-# Temporary files
-tmp/
-temp/
-*.tmp
+# Valgrind
+valgrind-out.txt
 
-# Keep directory structure but ignore contents
-!bin/.gitkeep
-!build/.gitkeep
+# gprof
+gmon.out
+
+# ============================================================================
+# DISTRIBUTION ARCHIVES
+# ============================================================================
+
+*.tar.gz
+*.zip
