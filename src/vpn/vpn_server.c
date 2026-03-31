@@ -14,6 +14,9 @@
 //
 // Depends on: pqc_common, pqc_crypto, pqc_auth, tun, udp_support, liboqs
 
+// _GNU_SOURCE exposes htobe64/be64toh from <endian.h>, which are glibc
+// extensions not available under _POSIX_C_SOURCE alone.
+#define _GNU_SOURCE
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>

@@ -118,11 +118,11 @@ dirs:
 # Common object compilation
 # ----------------------------------------------------------------------------
 
-$(OBJ_DIR)/common/%.o: $(SRC_COMMON)/%.c
+$(OBJ_DIR)/common/%.o: $(SRC_COMMON)/%.c | dirs
 	@echo "  CC  $<"
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBOQS_INC) -c $< -o $@
 
-$(OBJ_DIR)/vpn/%.o: $(SRC_VPN)/%.c
+$(OBJ_DIR)/vpn/%.o: $(SRC_VPN)/%.c | dirs
 	@echo "  CC  $<"
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBOQS_INC) -c $< -o $@
 

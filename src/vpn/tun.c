@@ -3,7 +3,10 @@
 //
 // Depends on: tun.h, pqc_common.h
 
-#define _POSIX_C_SOURCE 200809L
+// _GNU_SOURCE must be defined before any system headers.
+// It unlocks struct ifreq, IFNAMSIZ, IFF_UP, and IFF_RUNNING in <net/if.h>,
+// which are guarded behind __USE_MISC and not exposed by _POSIX_C_SOURCE alone.
+#define _GNU_SOURCE
 
 #include "tun.h"
 
@@ -16,10 +19,14 @@
 
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
+// <net/if.h> must come before <linux/if_tun.h>.
+// <linux/if_tun.h> pulls in <linux/if.h> which defines a kernel-space
+// struct ifreq that conflicts with the userspace definition in <net/if.h>
+// if the order is reversed.
 #include <net/if.h>
 #include <linux/if_tun.h>
-#include <netinet/in.h>
 
 // ============================================================================
 // LIFECYCLE
