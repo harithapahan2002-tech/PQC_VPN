@@ -26,7 +26,7 @@
 // CONFIGURATION
 // ============================================================================
 
-#define SERVER_IP        "10.0.5.1"
+#define SERVER_IP        "127.0.0.1"
 #define CLIENT_TUN_IP    "10.8.0.2"
 #define SERVER_TUN_IP    "10.8.0.1"
 #define NETMASK          "255.255.255.0"
