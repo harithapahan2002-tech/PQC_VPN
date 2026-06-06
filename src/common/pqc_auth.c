@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -209,14 +210,57 @@ int auth_server(const auth_context_t *ctx,
 
     // ------------------------------------------------------------------
     // Step 1: Receive client_challenge (32 bytes)
+    //
+    // Loop until we receive a packet of exactly CHALLENGE_LEN bytes or
+    // the timeout expires. This skips stale tunnel packets left in the
+    // socket buffer from a previous session — they are larger than 32
+    // bytes and can be safely discarded here.
     // ------------------------------------------------------------------
     uint8_t client_challenge[CHALLENGE_LEN];
+    uint8_t discard_buf[UDP_RECV_BUFSIZE];
+    int     got_challenge = 0;
+    struct  timespec deadline;
+    clock_gettime(CLOCK_MONOTONIC, &deadline);
+    deadline.tv_sec += AUTH_TIMEOUT_MS / 1000;
 
-    if (udp_recv_exact(udp_sock, client_challenge, CHALLENGE_LEN,
-                       client_addr, AUTH_TIMEOUT_MS) != 0) {
+    while (!got_challenge) {
+        // Check if we've exceeded the overall timeout
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        int remaining_ms = (int)((deadline.tv_sec  - now.tv_sec)  * 1000 +
+                                 (deadline.tv_nsec - now.tv_nsec) / 1000000);
+        if (remaining_ms <= 0) break;
+
+        // Poll with remaining time
+        struct pollfd pfd = { .fd = udp_sock, .events = POLLIN };
+        int r = poll(&pfd, 1, remaining_ms);
+        if (r <= 0) break;
+
+        // Peek at the packet size before committing
+        struct sockaddr_in src;
+        socklen_t src_len = sizeof(src);
+        ssize_t n = recvfrom(udp_sock, discard_buf, sizeof(discard_buf), 0,
+                             (struct sockaddr *)&src, &src_len);
+        if (n < 0) break;
+
+        if (n == CHALLENGE_LEN) {
+            // Right size — this is the client challenge
+            memcpy(client_challenge, discard_buf, CHALLENGE_LEN);
+            *client_addr = src;
+            got_challenge = 1;
+        } else {
+            // Wrong size — stale packet, discard silently
+            fprintf(stderr, "   🧹 Skipped %zd-byte stale packet during "
+                            "auth wait\n", n);
+        }
+    }
+
+    if (!got_challenge) {
+        fprintf(stderr, "❌ Auth timeout waiting for peer\n");
         fprintf(stderr, "❌ Auth: failed to receive client challenge\n");
         return -1;
     }
+
     printf("   ✅ Received client challenge from %s:%d\n",
            inet_ntoa(client_addr->sin_addr),
            ntohs(client_addr->sin_port));
@@ -255,20 +299,47 @@ int auth_server(const auth_context_t *ctx,
 
     // ------------------------------------------------------------------
     // Step 5: Receive client_mac (32 bytes)
+    // Same size-filtering approach as Step 1 — loop and skip any
+    // packets that aren't exactly HMAC_LEN bytes (stale tunnel data).
     // ------------------------------------------------------------------
     uint8_t received_client_mac[HMAC_LEN];
-    struct sockaddr_in from_addr;
+    uint8_t discard_mac[UDP_RECV_BUFSIZE];
+    int     got_mac = 0;
+    struct  timespec mac_deadline;
+    clock_gettime(CLOCK_MONOTONIC, &mac_deadline);
+    mac_deadline.tv_sec += AUTH_TIMEOUT_MS / 1000;
 
-    if (udp_recv_exact(udp_sock, received_client_mac, HMAC_LEN,
-                       &from_addr, AUTH_TIMEOUT_MS) != 0) {
-        fprintf(stderr, "❌ Auth: failed to receive client MAC\n");
-        return -1;
+    while (!got_mac) {
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        int remaining_ms = (int)((mac_deadline.tv_sec  - now.tv_sec)  * 1000 +
+                                 (mac_deadline.tv_nsec - now.tv_nsec) / 1000000);
+        if (remaining_ms <= 0) break;
+
+        struct pollfd pfd = { .fd = udp_sock, .events = POLLIN };
+        int r = poll(&pfd, 1, remaining_ms);
+        if (r <= 0) break;
+
+        struct sockaddr_in src;
+        socklen_t src_len = sizeof(src);
+        ssize_t n = recvfrom(udp_sock, discard_mac, sizeof(discard_mac), 0,
+                             (struct sockaddr *)&src, &src_len);
+        if (n < 0) break;
+
+        if (n == HMAC_LEN &&
+            src.sin_addr.s_addr == client_addr->sin_addr.s_addr &&
+            src.sin_port        == client_addr->sin_port) {
+            memcpy(received_client_mac, discard_mac, HMAC_LEN);
+            got_mac = 1;
+        } else {
+            fprintf(stderr, "   🧹 Skipped %zd-byte stale packet "
+                            "during MAC wait\n", n);
+        }
     }
 
-    // Verify the response came from the same client address
-    if (from_addr.sin_addr.s_addr != client_addr->sin_addr.s_addr ||
-        from_addr.sin_port        != client_addr->sin_port) {
-        fprintf(stderr, "❌ Auth: client MAC arrived from unexpected address\n");
+    if (!got_mac) {
+        fprintf(stderr, "❌ Auth timeout waiting for peer\n");
+        fprintf(stderr, "❌ Auth: failed to receive client MAC\n");
         return -1;
     }
 
