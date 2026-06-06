@@ -46,7 +46,7 @@
 #define MAX_TUN_PAYLOAD   1400
 
 // Encrypted packet = header + ciphertext (same length as plaintext for GCM)
-// Header: SEQ(8) + IV(12) + TAG(16) = 36 bytes
+// Header: MAGIC(4) + TYPE(1) + SEQ(8) + IV(12) + TAG(16) = 41 bytes
 #define VPN_HEADER_SIZE   (sizeof(vpn_packet_header_t))
 
 // UDP receive buffer must hold a full encrypted packet
@@ -69,19 +69,41 @@
 // PACKET HEADER
 // ============================================================================
 
+// Magic number — first 4 bytes of every VPN data packet.
+// Allows the receiver to quickly identify and silently discard stale
+// packets from previous sessions, OS background traffic, or any other
+// foreign UDP datagrams that arrive on port 5555.
+// "PQVC" = Post-Quantum VPN Client
+#define VPN_MAGIC        0x50515643U
+#define VPN_MAGIC_SIZE   4
+
+// Packet types — carried in the type field of vpn_packet_header_t.
+// Allows the receiver to distinguish data packets from keepalives
+// without decrypting the payload first.
+#define PKT_TYPE_DATA      0x01   // Normal encrypted IP packet
+#define PKT_TYPE_KEEPALIVE 0x02   // Heartbeat — payload is a single zero byte
+
+// Keepalive interval — client sends a heartbeat if no data sent in this time.
+// Server ends session if no packet (data or keepalive) received within
+// KEEPALIVE_IDLE_SEC seconds.
+#define KEEPALIVE_INTERVAL_SEC  10   // Client sends keepalive every 10s
+#define KEEPALIVE_IDLE_SEC      45   // Server ends session after 45s silence
+
 // Wire format for every VPN data packet:
-//   [sequence: 8 bytes][iv: 12 bytes][tag: 16 bytes][ciphertext: variable]
+//   [magic: 4][type: 1][sequence: 8][iv: 12][tag: 16][ciphertext]
 //
 // packed to ensure no compiler padding alters the wire layout.
 typedef struct {
-    uint64_t sequence;   // Big-endian sequence number (replay protection)
-    uint8_t  iv[IV_LEN]; // Nonce used for this packet's AES-GCM encryption
+    uint32_t magic;       // VPN_MAGIC — identifies this as a valid VPN packet
+    uint8_t  type;        // PKT_TYPE_DATA or PKT_TYPE_KEEPALIVE
+    uint64_t sequence;    // Big-endian sequence number (replay protection)
+    uint8_t  iv[IV_LEN];  // Nonce used for this packet's AES-GCM encryption
     uint8_t  tag[TAG_LEN];// AES-GCM authentication tag
     // Ciphertext follows immediately in the wire buffer (not in this struct)
 } __attribute__((packed)) vpn_packet_header_t;
 
-// Compile-time check: header must be exactly 36 bytes
-_Static_assert(sizeof(vpn_packet_header_t) == 36,
+// Compile-time check: header must be exactly 41 bytes
+_Static_assert(sizeof(vpn_packet_header_t) == 41,
                "vpn_packet_header_t size mismatch — check padding");
 
 // ============================================================================
