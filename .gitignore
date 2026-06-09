@@ -74,3 +74,23 @@ gmon.out
 
 *.tar.gz
 *.zip
+
+# ============================================================================
+# ML-DSA CERTIFICATE FILES — NEVER COMMIT THESE
+# ============================================================================
+
+# CA private key — if this leaks anyone can forge certificates
+ca_key.priv
+
+# Entity private keys
+server_key.priv
+client_key.priv
+*_key.priv
+
+# Certificates are not secret but keep them out of the repo
+# so each deployment generates its own
+ca_cert.pub
+server_cert.bin
+client_cert.bin
+*_cert.bin
+*_cert.pub

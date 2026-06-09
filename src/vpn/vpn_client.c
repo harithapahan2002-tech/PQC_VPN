@@ -1,6 +1,6 @@
 // vpn_client.c
 // Post-Quantum VPN Client
-// ML-KEM-768 + PSK auth + AES-256-GCM + keepalive + full traffic routing
+// ML-KEM-768 + ML-DSA-65 cert auth + AES-256-GCM + keepalive
 
 #define _GNU_SOURCE
 #define _POSIX_C_SOURCE 200809L
@@ -19,7 +19,7 @@
 
 #include "../common/pqc_common.h"
 #include "../common/pqc_crypto.h"
-#include "../common/pqc_auth.h"
+#include "../common/pqc_cert.h"
 #include "tun.h"
 #include "udp_support.h"
 
@@ -124,17 +124,14 @@ static void dns_restore(void) {
     if (run_cmd("mv " RESOLV_CONF_BAK " " RESOLV_CONF " 2>/dev/null") == 0)
         printf("   ✅ DNS restored\n");
     else
-        fprintf(stderr, "   ⚠️  DNS restore failed — check %s\n", RESOLV_CONF_BAK);
+        fprintf(stderr, "   ⚠️  DNS restore failed — check %s\n",
+                RESOLV_CONF_BAK);
 }
 
 // ============================================================================
 // KEEPALIVE
 // ============================================================================
 
-// send_keepalive: encrypt a 1-byte payload and send it as PKT_TYPE_KEEPALIVE.
-// The server decrypts it to verify the auth tag, then discards the payload.
-// This resets the server's idle timer, keeping the session alive during
-// periods with no real traffic.
 static int send_keepalive(int                      udp_sock,
                           const struct sockaddr_in *server_addr,
                           uint8_t                   session_key[AES_KEY_LEN],
@@ -172,17 +169,28 @@ static int send_keepalive(int                      udp_sock,
 static int perform_handshake(int                      udp_sock,
                              const struct sockaddr_in *server_addr,
                              uint8_t                   session_key[AES_KEY_LEN],
-                             const auth_context_t     *auth_ctx) {
+                             const uint8_t             ca_pubkey[CERT_PUBKEY_LEN],
+                             const pqc_cert_t         *client_cert) {
 
     printf("\n🔐 Starting handshake...\n");
 
-    printf("\n── Phase 1: Mutual authentication ───────────────────────\n");
-    if (auth_client(auth_ctx, udp_sock, server_addr) != 0) {
-        fprintf(stderr, "❌ Authentication failed\n"); return -1;
-    }
-    printf("✅ Peer authenticated\n");
+    // ------------------------------------------------------------------
+    // Phase 1: ML-DSA-65 certificate exchange
+    // ------------------------------------------------------------------
+    printf("\n── Phase 1: Certificate authentication (ML-DSA-65) ──────\n");
 
+    if (cert_handshake_client(ca_pubkey, client_cert,
+                              udp_sock, server_addr) != 0) {
+        fprintf(stderr, "❌ Certificate authentication failed\n");
+        return -1;
+    }
+    printf("✅ Server authenticated via ML-DSA-65 certificate\n");
+
+    // ------------------------------------------------------------------
+    // Phase 2: ML-KEM-768 key exchange
+    // ------------------------------------------------------------------
     printf("\n── Phase 2: ML-KEM-768 key exchange ─────────────────────\n");
+
     OQS_KEM *kem = OQS_KEM_new(KEM_ALG);
     if (!kem) { fprintf(stderr, "❌ KEM init failed\n"); return -1; }
 
@@ -203,7 +211,8 @@ static int perform_handshake(int                      udp_sock,
     clock_gettime(CLOCK_MONOTONIC, &t2);
     printf("   ✅ Keypair: %.2f µs\n", elapsed_us(t1, t2));
 
-    if (send_udp(udp_sock, client_pk, kem->length_public_key, server_addr) < 0) {
+    if (send_udp(udp_sock, client_pk, kem->length_public_key,
+                 server_addr) < 0) {
         fprintf(stderr, "❌ Public key send failed\n"); goto kem_error;
     }
     printf("   ✅ Public key sent (%zu bytes)\n", kem->length_public_key);
@@ -217,12 +226,16 @@ static int perform_handshake(int                      udp_sock,
     printf("   ✅ Ciphertext received (%zu bytes)\n", kem->length_ciphertext);
 
     clock_gettime(CLOCK_MONOTONIC, &t1);
-    if (OQS_KEM_decaps(kem, shared_secret, ciphertext, client_sk) != OQS_SUCCESS) {
+    if (OQS_KEM_decaps(kem, shared_secret, ciphertext, client_sk)
+            != OQS_SUCCESS) {
         fprintf(stderr, "❌ Decapsulation failed\n"); goto kem_error;
     }
     clock_gettime(CLOCK_MONOTONIC, &t2);
     printf("   ✅ Decapsulation: %.2f µs\n", elapsed_us(t1, t2));
 
+    // ------------------------------------------------------------------
+    // Phase 3: Session key derivation
+    // ------------------------------------------------------------------
     printf("\n── Phase 3: Session key derivation ──────────────────────\n");
     hkdf_sha256(shared_secret, kem->length_shared_secret,
                 NULL, 0, "vpn-session-key", session_key, AES_KEY_LEN);
@@ -252,7 +265,7 @@ kem_error:
 int main(void) {
     printf("╔═══════════════════════════════════════════════════════════╗\n");
     printf("║        Post-Quantum VPN Client (ML-KEM-768)              ║\n");
-    printf("║        PSK Auth + AES-256-GCM + Keepalive               ║\n");
+    printf("║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║\n");
     printf("╚═══════════════════════════════════════════════════════════╝\n\n");
 
     struct sigaction sa;
@@ -266,7 +279,8 @@ int main(void) {
     int                udp_sock = -1;
     struct sockaddr_in server_addr;
     uint8_t            session_key[AES_KEY_LEN];
-    auth_context_t     auth_ctx;
+    uint8_t            ca_pubkey[CERT_PUBKEY_LEN];
+    pqc_cert_t         client_cert;
     char               saved_route[256];
     char               saved_gateway[64];
     nonce_state_t      tx_nonce;
@@ -276,20 +290,35 @@ int main(void) {
 
     memset(&tun, 0, sizeof(tun));
     memset(&server_addr, 0, sizeof(server_addr));
-    memset(session_key, 0, sizeof(session_key));
-    memset(saved_route, 0, sizeof(saved_route));
-    memset(saved_gateway, 0, sizeof(saved_gateway));
+    memset(session_key,  0, sizeof(session_key));
+    memset(saved_route,  0, sizeof(saved_route));
+    memset(saved_gateway,0, sizeof(saved_gateway));
     tun.fd = -1;
 
-    // 1. Load PSK
-    printf("1️⃣  Loading PSK...\n");
-    if (auth_load_psk(&auth_ctx, PSK_FILE_PATH) != 0) {
-        fprintf(stderr, "❌ PSK load failed\n"); return 1;
+    // 1. Load CA public key
+    printf("1️⃣  Loading CA public key from '%s'...\n", CA_CERT_PATH);
+    if (cert_load_ca_pubkey(ca_pubkey) != 0) {
+        fprintf(stderr, "❌ Failed — copy ca_cert.pub from server\n");
+        return 1;
     }
-    printf("   ✅ PSK loaded\n\n");
+    printf("   ✅ CA public key loaded\n\n");
 
-    // 2. Save network state
-    printf("2️⃣  Saving network state...\n");
+    // 2. Load client certificate and private key
+    printf("2️⃣  Loading client certificate from '%s'...\n", CLIENT_CERT_PATH);
+    if (cert_load(CLIENT_CERT_PATH, &client_cert) != 0) {
+        fprintf(stderr, "❌ Failed — run ./bin/gen_cert client\n");
+        return 1;
+    }
+    if (cert_verify(&client_cert, ca_pubkey) != 0) {
+        fprintf(stderr, "❌ Client certificate is invalid or expired\n");
+        return 1;
+    }
+    printf("   ✅ Client certificate valid\n");
+    cert_print(&client_cert);
+    printf("\n");
+
+    // 3. Save network state
+    printf("3️⃣  Saving network state...\n");
     if (save_default_route(saved_route, sizeof(saved_route)) == 0) {
         extract_gateway(saved_route, saved_gateway, sizeof(saved_gateway));
         if (saved_gateway[0])
@@ -297,38 +326,43 @@ int main(void) {
     }
     printf("\n");
 
-    // 3. TUN interface
-    printf("3️⃣  Creating TUN '%s'...\n", TUN_NAME);
+    // 4. TUN interface
+    printf("4️⃣  Creating TUN '%s'...\n", TUN_NAME);
     if (tun_create(&tun, TUN_NAME) != 0) {
         fprintf(stderr, "❌ TUN failed (run as root)\n"); goto cleanup;
     }
-    if (tun_set_ip(&tun, CLIENT_TUN_IP, SERVER_TUN_IP, NETMASK) != 0) goto cleanup;
+    if (tun_set_ip(&tun, CLIENT_TUN_IP, SERVER_TUN_IP, NETMASK) != 0)
+        goto cleanup;
     if (tun_up(&tun) != 0) goto cleanup;
     printf("\n");
 
-    // 4. UDP socket
-    printf("4️⃣  UDP socket...\n");
+    // 5. UDP socket
+    printf("5️⃣  UDP socket...\n");
     udp_sock = create_udp_socket(0);
-    if (udp_sock < 0) { fprintf(stderr, "❌ Socket failed\n"); goto cleanup; }
+    if (udp_sock < 0) {
+        fprintf(stderr, "❌ Socket failed\n"); goto cleanup;
+    }
     printf("   ✅ Port %d\n\n", get_socket_port(udp_sock));
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_port   = htons(VPN_PORT);
     if (inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr) != 1) {
-        fprintf(stderr, "❌ Invalid server IP: %s\n", SERVER_IP); goto cleanup;
+        fprintf(stderr, "❌ Invalid server IP: %s\n", SERVER_IP);
+        goto cleanup;
     }
 
-    // 5. Handshake
-    printf("5️⃣  Connecting to %s:%d...\n", SERVER_IP, VPN_PORT);
-    if (perform_handshake(udp_sock, &server_addr, session_key, &auth_ctx) != 0) {
+    // 6. Handshake
+    printf("6️⃣  Connecting to %s:%d...\n", SERVER_IP, VPN_PORT);
+    if (perform_handshake(udp_sock, &server_addr, session_key,
+                          ca_pubkey, &client_cert) != 0) {
         fprintf(stderr, "❌ Handshake failed\n"); goto cleanup;
     }
     if (init_nonce_state(&tx_nonce) != 0) {
         fprintf(stderr, "❌ Nonce init failed\n"); goto cleanup;
     }
 
-    // 6. Routing — only after successful handshake
-    printf("6️⃣  Configuring routing...\n");
+    // 7. Routing
+    printf("7️⃣  Configuring routing...\n");
     if (saved_gateway[0] && route_add_vpn(SERVER_IP, saved_gateway) == 0)
         route_applied = 1;
     else
@@ -336,8 +370,8 @@ int main(void) {
                         "internet won't route\n");
     printf("\n");
 
-    // 7. DNS
-    printf("7️⃣  Configuring DNS...\n");
+    // 8. DNS
+    printf("8️⃣  Configuring DNS...\n");
     if (dns_apply() == 0) dns_applied = 1;
     printf("\n");
 
@@ -345,6 +379,7 @@ int main(void) {
     printf("✅ VPN connected — all traffic routing through server\n\n");
     printf("   Client : %s (%s)\n", CLIENT_TUN_IP, TUN_NAME);
     printf("   Server : %s:%d\n",   SERVER_IP, VPN_PORT);
+    printf("   Auth   : ML-DSA-65 certificates\n");
     printf("   DNS    : %s\n",      VPN_DNS_SERVER);
     printf("   KA     : every %ds, idle timeout %ds\n\n",
            KEEPALIVE_INTERVAL_SEC, KEEPALIVE_IDLE_SEC);
@@ -358,17 +393,16 @@ int main(void) {
     uint8_t enc_buf[VPN_HEADER_SIZE + MAX_TUN_PAYLOAD];
 
     struct pollfd fds[2];
-    fds[0].fd = tun.fd;    fds[0].events = POLLIN;
-    fds[1].fd = udp_sock;  fds[1].events = POLLIN;
+    fds[0].fd = tun.fd;   fds[0].events = POLLIN;
+    fds[1].fd = udp_sock; fds[1].events = POLLIN;
 
-    // Track last time we sent any packet (data or keepalive)
     time_t last_tx_time = time(NULL);
 
     while (running) {
         int ret = poll(fds, 2, 1000);
         if (ret < 0) { if (errno == EINTR) continue; perror("poll"); break; }
 
-        // Send keepalive if no outgoing packet in KEEPALIVE_INTERVAL_SEC
+        // Send keepalive if idle
         if (time(NULL) - last_tx_time >= KEEPALIVE_INTERVAL_SEC) {
             if (send_keepalive(udp_sock, &server_addr, session_key,
                                &tx_nonce, &tx_sequence) == 0) {
@@ -409,7 +443,7 @@ int main(void) {
             bytes_sent += total;
             pkts_sent++;
             tx_sequence++;
-            last_tx_time = time(NULL);  // Reset keepalive timer on real data
+            last_tx_time = time(NULL);
 
             printf("📤 #%lu %zd→%zu | ", pkts_sent, nread, total);
             print_ip_packet(tun_buf, (size_t)nread);
@@ -426,12 +460,10 @@ int main(void) {
                 from.sin_port        != server_addr.sin_port) continue;
 
             vpn_packet_header_t *hdr = (vpn_packet_header_t *)udp_buf;
-
             if (ntohl(hdr->magic) != VPN_MAGIC) {
                 fprintf(stderr, "⚠️  Bad magic — discarded\n"); continue;
             }
 
-            // Server keepalives are rare but handle them gracefully
             if (hdr->type == PKT_TYPE_KEEPALIVE) {
                 printf("💓 Server keepalive received\n"); continue;
             }
@@ -464,12 +496,11 @@ cleanup:
     if (route_applied) route_remove_vpn(SERVER_IP);
     if (dns_applied)   dns_restore();
 
-    printf("\n📊 sent=%lu recv=%lu keepalives=%lu replays_blocked=%lu\n",
-           (unsigned long)pkts_sent,   (unsigned long)pkts_recv,
+    printf("\n📊 sent=%lu recv=%lu keepalives=%lu replays=%lu\n",
+           (unsigned long)pkts_sent,       (unsigned long)pkts_recv,
            (unsigned long)keepalives_sent, (unsigned long)replays_blocked);
 
     memset(session_key, 0, sizeof(session_key));
-    memset(&auth_ctx,   0, sizeof(auth_ctx));
     memset(&tx_nonce,   0, sizeof(tx_nonce));
 
     if (tun.fd >= 0) { tun_down(&tun); tun_close(&tun); }

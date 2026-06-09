@@ -2,29 +2,30 @@
 # PQ-VPN build system
 #
 # Targets:
-#   make all          — build vpn_server, vpn_client, gen_psk, and all tests
-#   make vpn_server   — build server only
-#   make vpn_client   — build client only
-#   make gen_psk      — build PSK generator utility
+#   make all          — build vpn_server, vpn_client, gen_psk, gen_ca, gen_cert
 #   make tests        — build and run all test suites
 #   make test_foundation
 #   make test_auth
 #   make test_replay
+#   make test_cert
 #   make clean        — remove all build artefacts
 #
 # Dependencies:
-#   liboqs   — Open Quantum Safe library (ML-KEM-768)
+#   liboqs   — Open Quantum Safe library (ML-KEM-768, ML-DSA-65)
 #   openssl  — libssl + libcrypto (AES-GCM, HMAC, HKDF, RAND)
 #
 # Install dependencies (Ubuntu/Debian):
 #   sudo apt install libssl-dev
 #   # liboqs: build from source — https://github.com/open-quantum-safe/liboqs
 #
-# Usage after build:
-#   1. Generate a shared PSK:   sudo ./bin/gen_psk
-#   2. Copy psk.conf to client machine
-#   3. Start server:            sudo ./bin/vpn_server
-#   4. Start client:            sudo ./bin/vpn_client
+# First-time setup with ML-DSA certificates:
+#   make all
+#   sudo ./bin/gen_ca               — generate CA keypair (once ever)
+#   sudo ./bin/gen_cert server      — issue server certificate
+#   sudo ./bin/gen_cert client      — issue client certificate
+#   Copy ca_cert.pub to both machines
+#   sudo ./bin/vpn_server
+#   sudo ./bin/vpn_client
 
 # ============================================================================
 # COMPILER AND FLAGS
@@ -54,16 +55,12 @@ SRC_TESTS   := src/tests
 BIN_DIR     := bin
 OBJ_DIR     := obj
 
-# Include paths
 INCLUDES    := -I$(SRC_COMMON) -I$(SRC_VPN)
 
 # ============================================================================
 # LIBRARIES
 # ============================================================================
 
-# liboqs — adjust prefix if installed to a non-standard location
-# Default: /usr/local (from a source build)
-# Override: make LIBOQS_PREFIX=/opt/liboqs
 LIBOQS_PREFIX ?= /usr/local
 
 LIBOQS_INC  := -I$(LIBOQS_PREFIX)/include
@@ -78,15 +75,16 @@ LIBS        := $(LIBOQS_LIB) $(OPENSSL_LIB) -lpthread
 # ============================================================================
 
 # Common layer — compiled into every target that needs it
+# pqc_cert.c added for ML-DSA-65 certificate authentication
 COMMON_SRCS := $(SRC_COMMON)/pqc_common.c \
                $(SRC_COMMON)/pqc_crypto.c \
-               $(SRC_COMMON)/pqc_auth.c
+               $(SRC_COMMON)/pqc_auth.c   \
+               $(SRC_COMMON)/pqc_cert.c
 
 # VPN network layer
 VPN_SRCS    := $(SRC_VPN)/tun.c \
                $(SRC_VPN)/udp_support.c
 
-# All shared sources (common + network)
 SHARED_SRCS := $(COMMON_SRCS) $(VPN_SRCS)
 
 # ============================================================================
@@ -102,12 +100,16 @@ SHARED_OBJS := $(COMMON_OBJS) $(VPN_OBJS)
 # ============================================================================
 
 .PHONY: all clean tests \
-        test_foundation test_auth test_replay \
-        run_tests dirs
+        test_foundation test_auth test_replay test_cert \
+        dirs
 
-all: dirs $(BIN_DIR)/vpn_server $(BIN_DIR)/vpn_client $(BIN_DIR)/gen_psk
+all: dirs \
+     $(BIN_DIR)/vpn_server \
+     $(BIN_DIR)/vpn_client \
+     $(BIN_DIR)/gen_psk    \
+     $(BIN_DIR)/gen_ca     \
+     $(BIN_DIR)/gen_cert
 
-# Create output directories
 dirs:
 	@mkdir -p $(BIN_DIR)
 	@mkdir -p $(OBJ_DIR)/common
@@ -115,7 +117,7 @@ dirs:
 	@mkdir -p $(OBJ_DIR)/tests
 
 # ----------------------------------------------------------------------------
-# Common object compilation
+# Object compilation
 # ----------------------------------------------------------------------------
 
 $(OBJ_DIR)/common/%.o: $(SRC_COMMON)/%.c | dirs
@@ -149,59 +151,81 @@ $(BIN_DIR)/vpn_client: $(SHARED_OBJS) $(SRC_VPN)/vpn_client.c
 	@echo "  ✅  Built $@"
 
 # ----------------------------------------------------------------------------
-# PSK generator utility
-# Thin wrapper around auth_generate_psk_file() — no TUN or liboqs needed
+# PSK generator (legacy — kept for reference and test_auth.c)
 # ----------------------------------------------------------------------------
 
 $(BIN_DIR)/gen_psk: dirs $(COMMON_OBJS) $(SRC_COMMON)/gen_psk_main.c
 	@echo "  LD  $@"
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBOQS_INC) \
 	    $(COMMON_OBJS) $(SRC_COMMON)/gen_psk_main.c \
-	    $(OPENSSL_LIB) -o $@
+	    $(LIBS) -o $@
 	@echo "  ✅  Built $@"
 
 # ----------------------------------------------------------------------------
-# Test: foundation (HKDF, nonce, AES-GCM, I/O)
-# Does not need liboqs or TUN — common layer only
+# CA keypair generator
+# Run once ever: sudo ./bin/gen_ca
+# Writes ca_key.priv (secret) and ca_cert.pub (distribute to all peers)
+# ----------------------------------------------------------------------------
+
+$(BIN_DIR)/gen_ca: dirs $(COMMON_OBJS) $(SRC_COMMON)/gen_ca_main.c
+	@echo "  LD  $@"
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBOQS_INC) \
+	    $(COMMON_OBJS) $(SRC_COMMON)/gen_ca_main.c \
+	    $(LIBS) -o $@
+	@echo "  ✅  Built $@"
+
+# ----------------------------------------------------------------------------
+# Certificate issuance tool
+# Run once per identity:
+#   sudo ./bin/gen_cert server   → server_cert.bin + server_key.priv
+#   sudo ./bin/gen_cert client   → client_cert.bin + client_key.priv
+# ----------------------------------------------------------------------------
+
+$(BIN_DIR)/gen_cert: dirs $(COMMON_OBJS) $(SRC_COMMON)/gen_cert_main.c
+	@echo "  LD  $@"
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBOQS_INC) \
+	    $(COMMON_OBJS) $(SRC_COMMON)/gen_cert_main.c \
+	    $(LIBS) -o $@
+	@echo "  ✅  Built $@"
+
+# ----------------------------------------------------------------------------
+# Tests
 # ----------------------------------------------------------------------------
 
 test_foundation: dirs $(COMMON_OBJS)
 	@echo "  LD  $(BIN_DIR)/test_foundation"
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBOQS_INC) \
 	    $(COMMON_OBJS) $(SRC_TESTS)/test_foundation.c \
-	    $(OPENSSL_LIB) -o $(BIN_DIR)/test_foundation
+	    $(LIBS) -o $(BIN_DIR)/test_foundation
 	@echo "  RUN $(BIN_DIR)/test_foundation"
 	@$(BIN_DIR)/test_foundation
-
-# ----------------------------------------------------------------------------
-# Test: auth (PSK loading, key derivation, MAC properties)
-# ----------------------------------------------------------------------------
 
 test_auth: dirs $(COMMON_OBJS)
 	@echo "  LD  $(BIN_DIR)/test_auth"
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBOQS_INC) \
 	    $(COMMON_OBJS) $(SRC_TESTS)/test_auth.c \
-	    $(OPENSSL_LIB) -o $(BIN_DIR)/test_auth
+	    $(LIBS) -o $(BIN_DIR)/test_auth
 	@echo "  RUN $(BIN_DIR)/test_auth"
 	@$(BIN_DIR)/test_auth
-
-# ----------------------------------------------------------------------------
-# Test: replay protection (sequence window, bitmap, forward jump rejection)
-# ----------------------------------------------------------------------------
 
 test_replay: dirs $(COMMON_OBJS)
 	@echo "  LD  $(BIN_DIR)/test_replay"
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBOQS_INC) \
 	    $(COMMON_OBJS) $(SRC_TESTS)/test_replay.c \
-	    $(OPENSSL_LIB) -o $(BIN_DIR)/test_replay
+	    $(LIBS) -o $(BIN_DIR)/test_replay
 	@echo "  RUN $(BIN_DIR)/test_replay"
 	@$(BIN_DIR)/test_replay
 
-# ----------------------------------------------------------------------------
-# Run all tests
-# ----------------------------------------------------------------------------
+# test_cert needs liboqs (ML-DSA signing/verification)
+test_cert: dirs $(COMMON_OBJS)
+	@echo "  LD  $(BIN_DIR)/test_cert"
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBOQS_INC) \
+	    $(COMMON_OBJS) $(SRC_TESTS)/test_cert.c \
+	    $(LIBS) -o $(BIN_DIR)/test_cert
+	@echo "  RUN $(BIN_DIR)/test_cert"
+	@$(BIN_DIR)/test_cert
 
-tests: test_foundation test_auth test_replay
+tests: test_foundation test_auth test_replay test_cert
 	@echo ""
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "  All test suites completed"
