@@ -83,7 +83,8 @@ COMMON_SRCS := $(SRC_COMMON)/pqc_common.c \
 
 # VPN network layer
 VPN_SRCS    := $(SRC_VPN)/tun.c \
-               $(SRC_VPN)/udp_support.c
+               $(SRC_VPN)/udp_support.c \
+               $(SRC_VPN)/session.c
 
 SHARED_SRCS := $(COMMON_SRCS) $(VPN_SRCS)
 
