@@ -87,7 +87,7 @@
 // Server ends session if no packet (data or keepalive) received within
 // KEEPALIVE_IDLE_SEC seconds.
 #define KEEPALIVE_INTERVAL_SEC  10   // Client sends keepalive every 10s
-#define KEEPALIVE_IDLE_SEC      45   // Server ends session after 45s silence
+#define KEEPALIVE_IDLE_SEC      45  // Server ends session after 45s silence
 
 // Wire format for every VPN data packet:
 //   [magic: 4][type: 1][sequence: 8][iv: 12][tag: 16][ciphertext]

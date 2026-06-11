@@ -324,13 +324,14 @@ int cert_verify(const pqc_cert_t         *cert,
 // ============================================================================
 
 // recv_cert_with_timeout: receive exactly sizeof(pqc_cert_t) bytes.
-// Skips packets of wrong size (stale tunnel data, etc.).
+// Uses MSG_PEEK to inspect packet size before consuming — non-cert
+// packets are left in the socket buffer for other threads to read.
 // Returns 0 on success, -1 on timeout or error.
 static int recv_cert_with_timeout(int                 udp_sock,
                                   pqc_cert_t         *cert_out,
                                   struct sockaddr_in *src_out,
                                   int                 timeout_ms) {
-    uint8_t buf[sizeof(pqc_cert_t) + 64];   // +64 safety margin
+    uint8_t buf[sizeof(pqc_cert_t) + 64];
     struct  timespec deadline;
     clock_gettime(CLOCK_MONOTONIC, &deadline);
     deadline.tv_sec += timeout_ms / 1000;
@@ -346,21 +347,29 @@ static int recv_cert_with_timeout(int                 udp_sock,
         int r = poll(&pfd, 1, remaining);
         if (r <= 0) break;
 
+        // PEEK first — read without consuming
         struct sockaddr_in src;
         socklen_t src_len = sizeof(src);
-        ssize_t n = recvfrom(udp_sock, buf, sizeof(buf), 0,
+        ssize_t n = recvfrom(udp_sock, buf, sizeof(buf), MSG_PEEK,
                              (struct sockaddr *)&src, &src_len);
         if (n < 0) break;
 
         if ((size_t)n == sizeof(pqc_cert_t)) {
+            // Right size — consume it properly
+            src_len = sizeof(src);
+            n = recvfrom(udp_sock, buf, sizeof(buf), 0,
+                         (struct sockaddr *)&src, &src_len);
+            if (n < 0) break;
             memcpy(cert_out, buf, sizeof(pqc_cert_t));
             if (src_out) *src_out = src;
             return 0;
         }
 
-        // Wrong size — stale packet, skip silently
-        fprintf(stderr, "   🧹 Skipped %zd-byte packet during cert exchange\n",
-                n);
+        // Wrong size — leave it in the socket buffer for the tunnel thread.
+        // Sleep briefly so we don't spin-poll consuming CPU.
+        fprintf(stderr, "   🔍 Cert listener: non-cert packet (%zd bytes) "
+                        "left for tunnel thread\n", n);
+        usleep(2000);   // 2ms — let tunnel thread pick it up
     }
 
     fprintf(stderr, "❌ cert: timeout waiting for certificate\n");
