@@ -24,17 +24,20 @@
 #include "udp_support.h"
 
 // ============================================================================
-// CONFIGURATION
+// CONFIGURATION DEFAULTS  (overridable via command-line arguments)
 // ============================================================================
 
 // SERVER_IP: 127.0.0.1  for local testing
 //            10.0.5.1   for namespace testing
 //            <VM IP>    for cloud deployment
-#define SERVER_IP        "127.0.0.1"
-#define CLIENT_TUN_IP    "10.8.0.2"
-#define SERVER_TUN_IP    "10.8.0.1"
-#define NETMASK          "255.255.255.0"
-#define TUN_NAME         "tun1"
+#define DEFAULT_SERVER_IP    "127.0.0.1"
+#define DEFAULT_TUN_NAME     "tun1"
+#define DEFAULT_CLIENT_IP    "10.8.0.2"
+#define DEFAULT_SERVER_TUN   "10.8.0.1"
+#define DEFAULT_NETMASK      "255.255.255.0"
+#define DEFAULT_CERT_PATH    CLIENT_CERT_PATH
+#define DEFAULT_KEY_PATH     CLIENT_KEY_PATH
+
 #define VPN_DNS_SERVER   "8.8.8.8"
 #define RESOLV_CONF      "/etc/resolv.conf"
 #define RESOLV_CONF_BAK  "/etc/resolv.conf.vpn_backup"
@@ -80,26 +83,31 @@ static int extract_gateway(const char *route, char *gw, size_t gw_len) {
     return (i > 0) ? 0 : -1;
 }
 
-static int route_add_vpn(const char *server_ip, const char *orig_gw) {
+static int route_add_vpn(const char *server_ip,  const char *orig_gw,
+                         const char *server_tun,  const char *tun_name) {
     char cmd[512];
+    // Keep the VPN server reachable via original gateway
     snprintf(cmd, sizeof(cmd),
              "ip route add %s via %s 2>/dev/null || true", server_ip, orig_gw);
     run_cmd(cmd);
+    // Route all traffic through the tunnel interface
     snprintf(cmd, sizeof(cmd),
              "ip route add default via %s dev %s metric 50",
-             SERVER_TUN_IP, TUN_NAME);
+             server_tun, tun_name);
     if (run_cmd(cmd) != 0) return -1;
-    printf("   ✅ Default route → tunnel (%s)\n", SERVER_TUN_IP);
+    printf("   ✅ Default route → tunnel (%s via %s)\n", tun_name, server_tun);
     return 0;
 }
 
-static void route_remove_vpn(const char *server_ip) {
+static void route_remove_vpn(const char *server_ip,  const char *server_tun,
+                              const char *tun_name) {
     char cmd[512];
     snprintf(cmd, sizeof(cmd),
              "ip route del default via %s dev %s metric 50 2>/dev/null || true",
-             SERVER_TUN_IP, TUN_NAME);
+             server_tun, tun_name);
     run_cmd(cmd);
-    snprintf(cmd, sizeof(cmd), "ip route del %s 2>/dev/null || true", server_ip);
+    snprintf(cmd, sizeof(cmd),
+             "ip route del %s 2>/dev/null || true", server_ip);
     run_cmd(cmd);
     printf("   ✅ Original routing restored\n");
 }
@@ -262,7 +270,46 @@ kem_error:
 // MAIN
 // ============================================================================
 
-int main(void) {
+int main(int argc, char *argv[]) {
+    // Runtime configuration — can be overridden via command-line
+    const char *server_ip   = DEFAULT_SERVER_IP;
+    const char *tun_name    = DEFAULT_TUN_NAME;
+    const char *client_ip   = DEFAULT_CLIENT_IP;
+    const char *server_tun  = DEFAULT_SERVER_TUN;
+    const char *netmask     = DEFAULT_NETMASK;
+    const char *cert_path   = DEFAULT_CERT_PATH;
+    const char *key_path    = DEFAULT_KEY_PATH;
+    (void)key_path;  // reserved for future private key use
+
+    // Parse command-line arguments
+    // Usage: vpn_client [--server IP] [--tun NAME] [--ip CLIENT_IP]
+    //                   [--cert PATH]
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--server") == 0 && i + 1 < argc)
+            server_ip  = argv[++i];
+        else if (strcmp(argv[i], "--tun") == 0 && i + 1 < argc)
+            tun_name   = argv[++i];
+        else if (strcmp(argv[i], "--ip") == 0 && i + 1 < argc)
+            client_ip  = argv[++i];
+        else if (strcmp(argv[i], "--cert") == 0 && i + 1 < argc)
+            cert_path  = argv[++i];
+        else if (strcmp(argv[i], "--help") == 0) {
+            printf("Usage: %s [options]\n", argv[0]);
+            printf("  --server IP    VPN server IP (default: %s)\n",
+                   DEFAULT_SERVER_IP);
+            printf("  --tun NAME     TUN interface name (default: %s)\n",
+                   DEFAULT_TUN_NAME);
+            printf("  --ip IP        Client TUN IP (default: %s)\n",
+                   DEFAULT_CLIENT_IP);
+            printf("  --cert PATH    Client certificate (default: %s)\n",
+                   DEFAULT_CERT_PATH);
+            return 0;
+        } else {
+            fprintf(stderr, "Unknown argument: %s (try --help)\n", argv[i]);
+            return 1;
+        }
+    }
+
     printf("╔═══════════════════════════════════════════════════════════╗\n");
     printf("║        Post-Quantum VPN Client (ML-KEM-768)              ║\n");
     printf("║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║\n");
@@ -304,8 +351,8 @@ int main(void) {
     printf("   ✅ CA public key loaded\n\n");
 
     // 2. Load client certificate and private key
-    printf("2️⃣  Loading client certificate from '%s'...\n", CLIENT_CERT_PATH);
-    if (cert_load(CLIENT_CERT_PATH, &client_cert) != 0) {
+    printf("2️⃣  Loading client certificate from '%s'...\n", cert_path);
+    if (cert_load(cert_path, &client_cert) != 0) {
         fprintf(stderr, "❌ Failed — run ./bin/gen_cert client\n");
         return 1;
     }
@@ -327,11 +374,11 @@ int main(void) {
     printf("\n");
 
     // 4. TUN interface
-    printf("4️⃣  Creating TUN '%s'...\n", TUN_NAME);
-    if (tun_create(&tun, TUN_NAME) != 0) {
+    printf("4️⃣  Creating TUN '%s'...\n", tun_name);
+    if (tun_create(&tun, tun_name) != 0) {
         fprintf(stderr, "❌ TUN failed (run as root)\n"); goto cleanup;
     }
-    if (tun_set_ip(&tun, CLIENT_TUN_IP, SERVER_TUN_IP, NETMASK) != 0)
+    if (tun_set_ip(&tun, client_ip, server_tun, netmask) != 0)
         goto cleanup;
     if (tun_up(&tun) != 0) goto cleanup;
     printf("\n");
@@ -346,13 +393,13 @@ int main(void) {
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_port   = htons(VPN_PORT);
-    if (inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr) != 1) {
-        fprintf(stderr, "❌ Invalid server IP: %s\n", SERVER_IP);
+    if (inet_pton(AF_INET, server_ip, &server_addr.sin_addr) != 1) {
+        fprintf(stderr, "❌ Invalid server IP: %s\n", server_ip);
         goto cleanup;
     }
 
     // 6. Handshake
-    printf("6️⃣  Connecting to %s:%d...\n", SERVER_IP, VPN_PORT);
+    printf("6️⃣  Connecting to %s:%d...\n", server_ip, VPN_PORT);
     if (perform_handshake(udp_sock, &server_addr, session_key,
                           ca_pubkey, &client_cert) != 0) {
         fprintf(stderr, "❌ Handshake failed\n"); goto cleanup;
@@ -363,7 +410,8 @@ int main(void) {
 
     // 7. Routing
     printf("7️⃣  Configuring routing...\n");
-    if (saved_gateway[0] && route_add_vpn(SERVER_IP, saved_gateway) == 0)
+    if (saved_gateway[0] && route_add_vpn(server_ip, saved_gateway,
+                                          server_tun, tun_name) == 0)
         route_applied = 1;
     else
         fprintf(stderr, "   ⚠️  Routing skipped — tunnel works, "
@@ -377,8 +425,8 @@ int main(void) {
 
     printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
     printf("✅ VPN connected — all traffic routing through server\n\n");
-    printf("   Client : %s (%s)\n", CLIENT_TUN_IP, TUN_NAME);
-    printf("   Server : %s:%d\n",   SERVER_IP, VPN_PORT);
+    printf("   Client : %s (%s)\n", client_ip, tun_name);
+    printf("   Server : %s:%d\n",   server_ip, VPN_PORT);
     printf("   Auth   : ML-DSA-65 certificates\n");
     printf("   DNS    : %s\n",      VPN_DNS_SERVER);
     printf("   KA     : every %ds, idle timeout %ds\n\n",
@@ -493,7 +541,7 @@ int main(void) {
 
 cleanup:
     printf("\n🧹 Restoring network...\n");
-    if (route_applied) route_remove_vpn(SERVER_IP);
+    if (route_applied) route_remove_vpn(server_ip, server_tun, tun_name);
     if (dns_applied)   dns_restore();
 
     printf("\n📊 sent=%lu recv=%lu keepalives=%lu replays=%lu\n",

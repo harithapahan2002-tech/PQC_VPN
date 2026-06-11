@@ -64,10 +64,11 @@
 
 // Session lifecycle states — used for clean shutdown signalling
 typedef enum {
-    SESSION_STATE_EMPTY      = 0,   // Slot is free
-    SESSION_STATE_HANDSHAKE  = 1,   // Thread running KEM exchange
-    SESSION_STATE_ACTIVE     = 2,   // Tunnel loop running
-    SESSION_STATE_CLOSING    = 3,   // Disconnect in progress
+    SESSION_STATE_EMPTY        = 0,   // Slot is free
+    SESSION_STATE_HANDSHAKE    = 1,   // Thread running KEM exchange
+    SESSION_STATE_TUNNEL_READY = 2,   // KEM done, about to enter tunnel loop
+    SESSION_STATE_ACTIVE       = 3,   // Tunnel loop running
+    SESSION_STATE_CLOSING      = 4,   // Disconnect in progress
 } session_state_t;
 
 typedef struct {

@@ -329,6 +329,16 @@ void *session_worker(void *arg) {
         goto worker_cleanup;
     }
 
+    // Signal that KEM is complete and we are about to enter the tunnel loop.
+    // session_accept() waits for this state before allowing the next client
+    // to start its handshake — prevents the cert listener for slot N+1 from
+    // consuming KEM packets meant for slot N.
+    s->state = SESSION_STATE_TUNNEL_READY;
+
+    // Small yield to ensure the main thread sees the state update
+    // before we start consuming from the shared UDP socket
+    usleep(5000);   // 5ms
+
     // Run tunnel loop
     s->state        = SESSION_STATE_ACTIVE;
     s->connected_at = time(NULL);
@@ -495,28 +505,33 @@ int session_accept(session_table_t    *table,
     printf("[slot %d] 🟢 Worker thread spawned (active: %d/%d)\n",
            slot, session_count(table), SESSION_MAX_CLIENTS);
 
-    // Wait for the worker thread to advance past KEM exchange
-    // (reach SESSION_STATE_ACTIVE) before the main thread starts
-    // listening for the next client's certificate on the same UDP socket.
+    // Wait for the worker thread to complete KEM exchange and reach
+    // SESSION_STATE_TUNNEL_READY before the main thread starts listening
+    // for the next client's certificate on the shared UDP socket.
     //
-    // Without this wait, the main thread races back into cert_handshake_server
-    // and consumes the client public key that the worker thread is expecting
-    // for the KEM exchange — causing KEM failure on the first connection
-    // while a second connection attempt is in progress.
+    // The KEM exchange sends and receives large UDP packets (1184 bytes
+    // public key, 1088 bytes ciphertext). If the main thread starts
+    // cert_handshake_server before KEM is complete, it will consume
+    // these packets — causing KEM failure on slot N and cert timeout
+    // on slot N+1.
     //
-    // We poll with a short sleep rather than a condition variable to keep
-    // the implementation simple. The total wait is bounded by the KEM
-    // exchange time (~5ms typical) plus a small margin.
+    // We wait for TUNNEL_READY (set by worker after KEM + nonce init)
+    // which guarantees the worker is about to enter its own poll loop
+    // and will consume its own UDP traffic from that point forward.
+    printf("[slot %d] ⏳ Waiting for KEM to complete...\n", slot);
     int wait_ms = 0;
-    while (wait_ms < 20000) {  // 20 second max wait
+    while (wait_ms < 30000) {   // 30 second max — KEM should take <100ms
         pthread_mutex_lock(&table->mutex);
         session_state_t st = table->sessions[slot].state;
         pthread_mutex_unlock(&table->mutex);
 
-        if (st == SESSION_STATE_ACTIVE || st == SESSION_STATE_EMPTY) break;
-        usleep(10000);  // 10ms poll interval
-        wait_ms += 10;
+        if (st >= SESSION_STATE_TUNNEL_READY ||
+            st == SESSION_STATE_EMPTY) break;
+
+        usleep(5000);   // 5ms poll interval
+        wait_ms += 5;
     }
+    printf("[slot %d] ✅ KEM complete — ready for next client\n", slot);
 
     return slot;
 
@@ -566,9 +581,10 @@ void session_print_status(session_table_t *table) {
 
         const char *state_str = "unknown";
         switch (s->state) {
-            case SESSION_STATE_HANDSHAKE: state_str = "handshake"; break;
-            case SESSION_STATE_ACTIVE:    state_str = "active";    break;
-            case SESSION_STATE_CLOSING:   state_str = "closing";   break;
+            case SESSION_STATE_HANDSHAKE:    state_str = "handshake";    break;
+            case SESSION_STATE_TUNNEL_READY: state_str = "kem-done";     break;
+            case SESSION_STATE_ACTIVE:       state_str = "active";       break;
+            case SESSION_STATE_CLOSING:      state_str = "closing";      break;
             default: break;
         }
 
