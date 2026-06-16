@@ -67,20 +67,25 @@ static int save_default_route(char *buf, size_t len) {
     if (!f) return -1;
     int found = (fgets(buf, (int)len, f) != NULL);
     pclose(f);
-    if (!found) return -1;
+    if (!found || strlen(buf) == 0) return -1;
+    // Strip trailing newline
     size_t l = strlen(buf);
     if (l > 0 && buf[l-1] == '\n') buf[l-1] = '\0';
     return 0;
 }
 
 static int extract_gateway(const char *route, char *gw, size_t gw_len) {
-    const char *via = strstr(route, "via ");
+    // Parse "default via X.X.X.X dev ..." — extract X.X.X.X
+    const char *via = strstr(route, " via ");
     if (!via) return -1;
-    via += 4;
+    via += 5;   // skip " via "
     size_t i = 0;
-    while (via[i] && via[i] != ' ' && i < gw_len - 1) gw[i] = via[i++];
+    while (via[i] && via[i] != ' ' && via[i] != '\n' && i < gw_len - 1)
+        gw[i] = via[i++];
     gw[i] = '\0';
-    return (i > 0) ? 0 : -1;
+    if (i == 0) return -1;
+    printf("   ✅ Detected gateway: %s\n", gw);
+    return 0;
 }
 
 static int route_add_vpn(const char *server_ip,  const char *orig_gw,
@@ -410,10 +415,20 @@ int main(int argc, char *argv[]) {
 
     // 7. Routing
     printf("7️⃣  Configuring routing...\n");
-    if (saved_gateway[0] && route_add_vpn(server_ip, saved_gateway,
-                                          server_tun, tun_name) == 0)
-        route_applied = 1;
-    else
+    if (save_default_route(saved_route, sizeof(saved_route)) == 0) {
+        printf("   ✅ Default route: %s\n", saved_route);
+        if (extract_gateway(saved_route, saved_gateway,
+                            sizeof(saved_gateway)) == 0) {
+            if (route_add_vpn(server_ip, saved_gateway,
+                              server_tun, tun_name) == 0)
+                route_applied = 1;
+        } else {
+            fprintf(stderr, "   ⚠️  Could not parse gateway from route\n");
+        }
+    } else {
+        fprintf(stderr, "   ⚠️  No default route found\n");
+    }
+    if (!route_applied)
         fprintf(stderr, "   ⚠️  Routing skipped — tunnel works, "
                         "internet won't route\n");
     printf("\n");
