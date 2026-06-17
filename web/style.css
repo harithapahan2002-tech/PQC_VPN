@@ -1,0 +1,342 @@
+/* style.css — PQ-VPN Status Page */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg:           #0f1117;
+    --bg-card:      #1a1d27;
+    --bg-card2:     #1e2130;
+    --border:       #2a2d3e;
+    --accent:       #6c63ff;
+    --accent2:      #00d4aa;
+    --text:         #e2e8f0;
+    --text-muted:   #8892a4;
+    --green:        #10b981;
+    --red:          #ef4444;
+    --yellow:       #f59e0b;
+    --code-bg:      #0d1117;
+    --radius:       10px;
+    --font-mono:    'Fira Code', 'Cascadia Code', monospace;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 2px;
+}
+
+/* ── Status Badge ─────────────────────────────────────────── */
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.status-badge.online  { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+.status-badge.offline { background: rgba(239,68,68,0.15);  color: var(--red);   border: 1px solid rgba(239,68,68,0.3); }
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.online  .dot { animation: pulse-green 2s infinite; }
+.offline .dot { background: var(--red); }
+
+@keyframes pulse-green {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+}
+
+/* ── Cards ───────────────────────────────────────────────── */
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.card h2 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ── Algorithm Card ──────────────────────────────────────── */
+
+.algo-card { border-left: 3px solid var(--accent); }
+
+.algo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.algo-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0.75rem 1rem;
+    background: var(--bg-card2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.algo-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.algo-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--accent2);
+    font-family: var(--font-mono);
+}
+
+/* ── Stats Grid ──────────────────────────────────────────── */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background: var(--bg-card2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+    font-family: var(--font-mono);
+    letter-spacing: -0.5px;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── Client Table ────────────────────────────────────────── */
+
+.client-count {
+    background: var(--accent);
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-style: normal;
+}
+
+.client-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.client-table th {
+    text-align: left;
+    padding: 8px 12px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+}
+
+.client-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+
+.client-table tr:last-child td { border-bottom: none; }
+
+.client-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.slot-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: rgba(108,99,255,0.2);
+    color: var(--accent);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+}
+
+.identity { font-weight: 600; color: var(--accent2); }
+.monospace { font-family: var(--font-mono); }
+
+.state-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.state-badge.active        { background: rgba(16,185,129,0.15); color: var(--green); }
+.state-badge.authenticating{ background: rgba(245,158,11,0.15);  color: var(--yellow); }
+.state-badge.closed        { background: rgba(239,68,68,0.15);   color: var(--red); }
+
+/* ── No Clients ──────────────────────────────────────────── */
+
+.no-clients {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+}
+
+.no-clients .hint {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+}
+
+.no-clients code {
+    background: var(--code-bg);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    color: var(--accent2);
+    border: 1px solid var(--border);
+}
+
+/* ── Instructions ────────────────────────────────────────── */
+
+.instructions { border-left: 3px solid var(--accent2); }
+
+.steps { display: flex; flex-direction: column; gap: 1rem; }
+
+.step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.step-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    background: rgba(108,99,255,0.2);
+    color: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+.step-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.step-content strong {
+    font-size: 0.875rem;
+    color: var(--text);
+}
+
+.step-content code {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent2);
+    background: var(--code-bg);
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    word-break: break-all;
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+
+footer {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+footer p + p { margin-top: 4px; }
+
+.updated, .refresh-note { font-size: 0.75rem; opacity: 0.7; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .algo-grid  { grid-template-columns: 1fr; }
+    .client-table { display: block; overflow-x: auto; }
+}

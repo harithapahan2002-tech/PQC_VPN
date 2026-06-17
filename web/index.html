@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PQ-VPN Status</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <h1>🔐 PQ-VPN</h1>
+                <p class="subtitle">Post-Quantum Virtual Private Network</p>
+            </div>
+            <div class="status-badge {{ 'online' if status.server_online else 'offline' }}">
+                <span class="dot"></span>
+                {{ 'Online' if status.server_online else 'Offline' }}
+            </div>
+        </header>
+
+        <!-- Algorithm Info -->
+        <section class="card algo-card">
+            <h2>Cryptographic Stack</h2>
+            <div class="algo-grid">
+                <div class="algo-item">
+                    <span class="algo-label">Key Exchange</span>
+                    <span class="algo-value">{{ status.algorithm_kem }}</span>
+                </div>
+                <div class="algo-item">
+                    <span class="algo-label">Authentication</span>
+                    <span class="algo-value">{{ status.algorithm_auth }}</span>
+                </div>
+                <div class="algo-item">
+                    <span class="algo-label">Encryption</span>
+                    <span class="algo-value">{{ status.algorithm_sym }}</span>
+                </div>
+                <div class="algo-item">
+                    <span class="algo-label">Standard</span>
+                    <span class="algo-value">NIST FIPS 203 / 204</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Server Stats -->
+        <section class="card">
+            <h2>Server Status</h2>
+            <div class="stats-grid">
+                <div class="stat">
+                    <span class="stat-value">{{ status.server_ip }}</span>
+                    <span class="stat-label">Server IP</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">{{ status.server_port }}</span>
+                    <span class="stat-label">UDP Port</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">
+                        {{ status.active_clients }} / {{ status.max_clients }}
+                    </span>
+                    <span class="stat-label">Active Clients</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">{{ status.total_connections }}</span>
+                    <span class="stat-label">Total Connections</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">{{ status.uptime }}</span>
+                    <span class="stat-label">Uptime</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Connected Clients -->
+        <section class="card">
+            <h2>
+                Connected Clients
+                <span class="client-count">{{ status.active_clients }}</span>
+            </h2>
+
+            {% if status.clients %}
+            <table class="client-table">
+                <thead>
+                    <tr>
+                        <th>Slot</th>
+                        <th>Identity</th>
+                        <th>IP Address</th>
+                        <th>State</th>
+                        <th>Connected</th>
+                        <th>Sent</th>
+                        <th>Received</th>
+                        <th>Keepalives</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in status.clients %}
+                    <tr>
+                        <td><span class="slot-badge">{{ client.slot }}</span></td>
+                        <td class="identity">{{ client.identity }}</td>
+                        <td class="monospace">{{ client.ip }}:{{ client.port }}</td>
+                        <td>
+                            <span class="state-badge {{ client.state }}">
+                                {{ client.state }}
+                            </span>
+                        </td>
+                        <td>{{ client.connected_at }}</td>
+                        <td class="monospace">{{ client.bytes_sent_fmt }}</td>
+                        <td class="monospace">{{ client.bytes_recv_fmt }}</td>
+                        <td class="monospace">{{ client.keepalives_recv }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-clients">
+                <p>No clients currently connected</p>
+                <p class="hint">Connect using: <code>sudo ./bin/vpn_client --server {{ status.server_ip }}</code></p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Connection Instructions -->
+        <section class="card instructions">
+            <h2>How to Connect</h2>
+            <div class="steps">
+                <div class="step">
+                    <span class="step-num">1</span>
+                    <div class="step-content">
+                        <strong>Build the client</strong>
+                        <code>git clone https://github.com/YOUR_USERNAME/pqvpn.git && cd pqvpn && make all</code>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-num">2</span>
+                    <div class="step-content">
+                        <strong>Place your certificate files</strong>
+                        <code>ca_cert.pub &nbsp; client_cert.bin &nbsp; client_key.priv</code>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-num">3</span>
+                    <div class="step-content">
+                        <strong>Connect</strong>
+                        <code>sudo ./bin/vpn_client --server {{ status.server_ip }}</code>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-num">4</span>
+                    <div class="step-content">
+                        <strong>Verify</strong>
+                        <code>curl ifconfig.me &nbsp; → &nbsp; {{ status.server_ip }}</code>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>
+                MSc Cyber Security Dissertation &mdash; Coventry University &mdash;
+                Post-Quantum VPN using NIST FIPS 203 &amp; 204
+            </p>
+            <p class="updated">Last updated: {{ status.log_updated }}</p>
+            <p class="refresh-note">Page auto-refreshes every 10 seconds</p>
+        </footer>
+
+    </div>
+
+    <!-- Auto-refresh via API -->
+    <script>
+        // Refresh client table every 10 seconds without full page reload
+        async function refreshStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+
+                // Update active client count
+                document.querySelector('.client-count').textContent =
+                    data.active_clients;
+
+                // Update status badge
+                const badge = document.querySelector('.status-badge');
+                badge.className = 'status-badge ' +
+                    (data.server_online ? 'online' : 'offline');
+                badge.querySelector('span:last-child').textContent =
+                    data.server_online ? 'Online' : 'Offline';
+
+                // Update uptime
+                const stats = document.querySelectorAll('.stat-value');
+                // Find uptime stat (5th one)
+                if (stats.length >= 5) stats[4].textContent = data.uptime;
+
+                // Update last-updated timestamp
+                document.querySelector('.updated').textContent =
+                    'Last updated: ' + data.log_updated;
+
+                // Update total connections
+                if (stats.length >= 4) stats[3].textContent =
+                    data.total_connections;
+
+            } catch (e) {
+                console.log('Status refresh failed:', e);
+            }
+        }
+
+        // Refresh every 10 seconds
+        setInterval(refreshStatus, 10000);
+    </script>
+</body>
+</html>
