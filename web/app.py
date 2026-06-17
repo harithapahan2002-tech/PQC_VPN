@@ -22,7 +22,18 @@ import json
 from datetime import datetime, timedelta
 from flask import Flask, render_template, jsonify
 
-app = Flask(__name__)
+import sys
+
+# Use absolute paths so Flask finds templates/static regardless of
+# the working directory the script was launched from (important when
+# run via start.sh through a venv from the project root).
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static"),
+)
 
 # Path to the vpn_server log file
 LOG_FILE = os.environ.get("VPN_LOG", "/tmp/vpn_server.log")

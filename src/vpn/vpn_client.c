@@ -91,13 +91,40 @@ static int extract_gateway(const char *route, char *gw, size_t gw_len) {
 static int route_add_vpn(const char *server_ip,  const char *orig_gw,
                          const char *server_tun,  const char *tun_name) {
     char cmd[512];
-    // Keep the VPN server reachable via original gateway
+
+    // CRITICAL: this host route MUST succeed before the default route
+    // is changed, or all traffic — including the client's own handshake
+    // and tunnel UDP packets to server_ip — gets routed back into the
+    // tunnel, creating an infinite encrypt-and-resend loop.
+    //
+    // Use 'replace' instead of 'add': 'add' fails silently (suppressed
+    // by 2>/dev/null) if a route to server_ip already exists from a
+    // previous run, leaving stale state. 'replace' always succeeds in
+    // setting the correct gateway, whether or not a route pre-exists.
     snprintf(cmd, sizeof(cmd),
-             "ip route add %s via %s 2>/dev/null || true", server_ip, orig_gw);
-    run_cmd(cmd);
-    // Route all traffic through the tunnel interface
+             "ip route replace %s via %s", server_ip, orig_gw);
+    if (run_cmd(cmd) != 0) {
+        fprintf(stderr, "   ❌ CRITICAL: failed to add host route for %s — "
+                        "aborting to prevent routing loop\n", server_ip);
+        return -1;
+    }
+
+    // Verify the host route actually points where we expect before
+    // proceeding. This catches cases where 'ip route replace' succeeded
+    // but the kernel resolved it differently than intended.
     snprintf(cmd, sizeof(cmd),
-             "ip route add default via %s dev %s metric 50",
+             "ip route get %s | grep -q 'via %s'", server_ip, orig_gw);
+    if (run_cmd(cmd) != 0) {
+        fprintf(stderr, "   ❌ CRITICAL: host route verification failed — "
+                        "aborting to prevent routing loop\n");
+        return -1;
+    }
+    printf("   ✅ Host route confirmed: %s via %s (bypasses tunnel)\n",
+           server_ip, orig_gw);
+
+    // Only now is it safe to make the tunnel the default route
+    snprintf(cmd, sizeof(cmd),
+             "ip route replace default via %s dev %s metric 50",
              server_tun, tun_name);
     if (run_cmd(cmd) != 0) return -1;
     printf("   ✅ Default route → tunnel (%s via %s)\n", tun_name, server_tun);
@@ -107,13 +134,18 @@ static int route_add_vpn(const char *server_ip,  const char *orig_gw,
 static void route_remove_vpn(const char *server_ip,  const char *server_tun,
                               const char *tun_name) {
     char cmd[512];
+    // Remove tunnel default route FIRST — restores normal routing
+    // immediately, before we touch the host route exception.
     snprintf(cmd, sizeof(cmd),
              "ip route del default via %s dev %s metric 50 2>/dev/null || true",
              server_tun, tun_name);
     run_cmd(cmd);
+
+    // Remove the host route exception for the server IP
     snprintf(cmd, sizeof(cmd),
              "ip route del %s 2>/dev/null || true", server_ip);
     run_cmd(cmd);
+
     printf("   ✅ Original routing restored\n");
 }
 
