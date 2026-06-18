@@ -52,6 +52,7 @@ CFLAGS  += -g -O0 \
 SRC_COMMON  := src/common
 SRC_VPN     := src/vpn
 SRC_TESTS   := src/tests
+SRC_BENCH   := src/bench
 BIN_DIR     := bin
 OBJ_DIR     := obj
 
@@ -102,6 +103,7 @@ SHARED_OBJS := $(COMMON_OBJS) $(VPN_OBJS)
 
 .PHONY: all clean tests \
         test_foundation test_auth test_replay test_cert \
+        bench \
         dirs
 
 all: dirs \
@@ -116,6 +118,7 @@ dirs:
 	@mkdir -p $(OBJ_DIR)/common
 	@mkdir -p $(OBJ_DIR)/vpn
 	@mkdir -p $(OBJ_DIR)/tests
+	@mkdir -p $(OBJ_DIR)/bench
 
 # ----------------------------------------------------------------------------
 # Object compilation
@@ -231,6 +234,37 @@ tests: test_foundation test_auth test_replay test_cert
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "  All test suites completed"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# ----------------------------------------------------------------------------
+# Benchmark suite — standalone, does not depend on VPN core objects
+# Compares ML-KEM-768/ML-DSA-65 against X25519/ECDSA-P256, plus
+# AES-256-GCM throughput at varying packet sizes.
+#
+# Usage:
+#   make bench
+#   ./bin/bench_crypto --tag local
+#   ./bin/bench_crypto --tag cloud --output cloud_results.csv
+# ----------------------------------------------------------------------------
+
+BENCH_OBJS := $(OBJ_DIR)/bench/bench_common.o \
+              $(OBJ_DIR)/bench/bench_kem.o    \
+              $(OBJ_DIR)/bench/bench_sig.o    \
+              $(OBJ_DIR)/bench/bench_aead.o
+
+$(OBJ_DIR)/bench/%.o: $(SRC_BENCH)/%.c | dirs
+	@echo "  CC  $<"
+	$(CC) $(CFLAGS) -I$(SRC_BENCH) $(LIBOQS_INC) -c $< -o $@
+
+$(BIN_DIR)/bench_crypto: dirs $(BENCH_OBJS) $(SRC_BENCH)/bench_main.c
+	@echo "  LD  $@"
+	$(CC) $(CFLAGS) -I$(SRC_BENCH) $(LIBOQS_INC) \
+	    $(BENCH_OBJS) $(SRC_BENCH)/bench_main.c \
+	    $(LIBS) -lm -o $@
+	@echo "  ✅  Built $@"
+
+bench: $(BIN_DIR)/bench_crypto
+	@echo "  RUN $(BIN_DIR)/bench_crypto"
+	@./$(BIN_DIR)/bench_crypto --tag local
 
 # ----------------------------------------------------------------------------
 # Clean
