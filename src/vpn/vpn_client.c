@@ -78,10 +78,18 @@ static int extract_gateway(const char *route, char *gw, size_t gw_len) {
     // Parse "default via X.X.X.X dev ..." — extract X.X.X.X
     const char *via = strstr(route, " via ");
     if (!via) return -1;
-    via += 5;   // skip " via "
+    via += 5;   // " via " is 5 characters: space-v-i-a-space
     size_t i = 0;
-    while (via[i] && via[i] != ' ' && via[i] != '\n' && i < gw_len - 1)
-        gw[i] = via[i++];
+    // NOTE: 'gw[i] = via[i++]' was used previously — this is undefined
+    // behaviour in C because the order of evaluation between the
+    // assignment's left side and the increment in via[i++] is
+    // unspecified by the standard. On this compiler it silently
+    // produced an empty string. Incrementing on a separate line
+    // removes the ambiguity entirely.
+    while (via[i] && via[i] != ' ' && via[i] != '\n' && i < gw_len - 1) {
+        gw[i] = via[i];
+        i++;
+    }
     gw[i] = '\0';
     if (i == 0) return -1;
     printf("   ✅ Detected gateway: %s\n", gw);
