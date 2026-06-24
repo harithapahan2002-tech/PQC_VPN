@@ -1,0 +1,1272 @@
+=== Run 1 ===
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 49921
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 26072.21 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 97.97 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
+📥 #1 48 bytes |    IPv6 packet len=48
+📥 #2 48 bytes |    IPv6 packet len=48
+📤 #2 48→89 |    IPv6 packet len=48
+📥 #3 48 bytes |    IPv6 packet len=48
+📤 #3 68→109 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=68
+📥 #4 68 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=68
+📤 #4 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #5 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #5 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #6 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #6 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #7 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #7 70→111 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=70
+📥 #8 158 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=158
+📤 #8 67→108 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=67
+📥 #9 67 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=67
+📤 #9 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #10 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #10 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #11 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #11 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #12 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #12 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #13 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #13 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #14 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #14 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #15 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #15 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #16 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #16 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #17 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #17 48→89 |    IPv6 packet len=48
+
+🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
+
+📊 sent=17 recv=17 keepalives=0 replays=0
+✅ Stopped
+=== Run 2 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 48808
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 3 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 50496
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 4 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 34141
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 5 ===
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 56978
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 3106.51 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 67.78 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
+📥 #1 48 bytes |    IPv6 packet len=48
+📤 #2 48→89 |    IPv6 packet len=48
+📤 #3 68→109 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=68
+📥 #2 68 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=68
+📤 #4 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #3 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #5 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #4 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #6 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #5 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #7 70→111 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=70
+📥 #6 158 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=158
+📤 #8 67→108 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=67
+📥 #7 67 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=67
+📤 #9 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #8 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #10 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #9 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #11 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #10 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #12 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #11 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #13 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #12 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #14 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #13 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #15 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #14 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #16 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #15 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #17 48→89 |    IPv6 packet len=48
+
+🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
+
+📊 sent=17 recv=15 keepalives=0 replays=0
+✅ Stopped
+=== Run 6 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 53102
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 7 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 53360
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 8 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 51981
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 9 ===
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 55050
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 31439.67 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 90.56 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
+📥 #1 48 bytes |    IPv6 packet len=48
+📤 #2 48→89 |    IPv6 packet len=48
+📤 #3 68→109 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=68
+📥 #2 68 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=68
+📤 #4 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #3 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #5 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #4 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #6 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #5 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #7 70→111 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=70
+📥 #6 158 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=158
+📤 #8 67→108 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=67
+📥 #7 67 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=67
+📤 #9 118�   ⚠️  Command failed: ip route del default via 10.8.0.1 dev tun1 metric 50 2>/dev/null || true
+�159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #8 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #10 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #9 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #11 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #10 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #12 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #11 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #13 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #12 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #14 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #13 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #15 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #14 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #16 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #15 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #17 48→89 |    IPv6 packet len=48
+
+🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
+
+📊 sent=17 recv=15 keepalives=0 replays=0
+✅ Stopped
+=== Run 10 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 54322
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 11 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 60080
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 12 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 60825
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 13 ===
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 54115
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 4400.94 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 122.66 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
+📤 #2 48→89 |    IPv6 packet len=48
+📤 #3 68→109 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=68
+📥 #1 68 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=68
+📤 #4 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #2 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #5 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #3 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #6 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #4 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #7 70→111 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=70
+📤 #8 48→89 |    IPv6 packet len=48
+📥 #5 158 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=158
+📤 #9 67→108 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=67
+📥 #6 67 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=67
+📤 #10 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #7 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #11 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #8 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #12 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #9 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #13 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #10 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #14 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #11 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #15 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #12 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #16 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #13 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #17 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #14 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+
+🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
+
+📊 sent=17 recv=14 keepalives=0 replays=0
+✅ Stopped
+=== Run 14 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 47170
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 15 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 43900
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 16 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 37613
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 17 ===
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 35428
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 54178.64 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 91.72 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
+📥 #1 48 bytes |    IPv6 packet len=48
+📤 #2 48→89 |    IPv6 packet len=48
+📤 #3 68→109 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=68
+📥 #2 68 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=68
+📤 #4 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #3 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #5 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #4 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #6 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
+📥 #5 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
+📤 #7 70→111 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=70
+📥 #6 158 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=158
+📤 #8 67→108 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=67
+📥 #7 67 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=67
+📤 #9 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #8 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #10 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #9 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #11 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #10 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #12 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #11 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #13 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #12 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #14 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #13 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #15 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #14 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #16 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
+📥 #15 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
+📤 #17 48→89 |    IPv6 packet len=48
+
+🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
+
+📊 sent=17 recv=15 keepalives=0 replays=0
+✅ Stopped
+=== Run 18 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 40336
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 19 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 56923
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
+=== Run 20 ===
+❌ cert: timeout waiting for certificate
+❌ cert: failed to receive server certificate
+❌ Certificate authentication failed
+❌ Handshake failed
+╔═══════════════════════════════════════════════════════════╗
+║        Post-Quantum VPN Client (ML-KEM-768)              ║
+║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
+╚═══════════════════════════════════════════════════════════╝
+
+1️⃣  Loading CA public key from 'ca_cert.pub'...
+   ✅ CA public key loaded
+
+2️⃣  Loading client certificate from 'client_cert.bin'...
+   ✅ Client certificate valid
+   Identity    : client
+   Issued      : 2026-06-15 14:03:47 UTC
+   Expires     : 2027-06-15 14:03:47 UTC
+   Algorithm   : ML-DSA-65
+   Cert size   : 5341 bytes
+   Fingerprint : f03eb8ed948755e5...
+
+3️⃣  Saving network state...
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Gateway: 10.0.2.2
+
+4️⃣  Creating TUN 'tun1'...
+   ✅ TUN interface 'tun1' created (fd=3)
+   ✅ IP configured: local=10.8.0.2 peer=10.8.0.1 mask=255.255.255.0
+   ✅ Interface 'tun1' is up
+
+5️⃣  UDP socket...
+   ✅ Port 48042
+
+6️⃣  Connecting to 209.97.191.183:5555...
+
+🔐 Starting handshake...
+
+── Phase 1: Certificate authentication (ML-DSA-65) ──────
+🔑 Cert auth: sending client certificate...
+   ✅ Client certificate sent (identity: 'client')
+
+🧹 Restoring network...
+
+📊 sent=0 recv=0 keepalives=0 replays=0
+✅ Stopped
