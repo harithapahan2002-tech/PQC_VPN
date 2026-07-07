@@ -13,7 +13,7 @@
 SERVER_IP="${1:-209.97.191.183}"
 NUM_RUNS="${2:-20}"
 LOG_FILE="handshake_log.txt"
-COOLDOWN_SEC=6   # Longer than the 5s TUNNEL_READY wait + margin
+COOLDOWN_SEC=50   # must exceed server idle timeout (45s)   # Longer than the 5s TUNNEL_READY wait + margin
 
 rm -f "$LOG_FILE"
 

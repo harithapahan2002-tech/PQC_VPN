@@ -26,7 +26,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 49921
+   ✅ Port 36109
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -40,10 +40,10 @@
 ✅ Server authenticated via ML-DSA-65 certificate
 
 ── Phase 2: ML-KEM-768 key exchange ─────────────────────
-   ✅ Keypair: 26072.21 µs
+   ✅ Keypair: 46330.12 µs
    ✅ Public key sent (1184 bytes)
    ✅ Ciphertext received (1088 bytes)
-   ✅ Decapsulation: 97.97 µs
+   ✅ Decapsulation: 268.18 µs
 
 ── Phase 3: Session key derivation ──────────────────────
    ✅ Session key derived (AES-256)
@@ -78,49 +78,16 @@
 📤 #1 48→89 |    IPv6 packet len=48
 📥 #1 48 bytes |    IPv6 packet len=48
 📥 #2 48 bytes |    IPv6 packet len=48
-📤 #2 48→89 |    IPv6 packet len=48
 📥 #3 48 bytes |    IPv6 packet len=48
-📤 #3 68→109 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=68
-📥 #4 68 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=68
-📤 #4 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #5 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #5 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #6 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #6 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #7 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #7 70→111 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=70
-📥 #8 158 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=158
-📤 #8 67→108 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=67
-📥 #9 67 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=67
-📤 #9 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #10 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #10 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #11 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #11 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #12 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #12 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #13 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #13 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #14 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #14 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #15 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #15 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #16 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #16 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #17 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #17 48→89 |    IPv6 packet len=48
+📤 #2 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
    ✅ Original routing restored
    ✅ DNS restored
 
-📊 sent=17 recv=17 keepalives=0 replays=0
+📊 sent=2 recv=3 keepalives=0 replays=0
 ✅ Stopped
 === Run 2 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -148,7 +115,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 48808
+   ✅ Port 55460
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -157,16 +124,55 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 34608.24 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 145.61 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 3 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -194,7 +200,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 50496
+   ✅ Port 52979
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -203,16 +209,56 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 3585.14 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 66.51 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
+📥 #1 48 bytes |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=1 keepalives=0 replays=0
 ✅ Stopped
 === Run 4 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -240,7 +286,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 34141
+   ✅ Port 35148
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -249,10 +295,53 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 3118.81 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 70.62 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 5 ===
 ╔═══════════════════════════════════════════════════════════╗
@@ -282,7 +371,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 56978
+   ✅ Port 43813
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -296,10 +385,10 @@
 ✅ Server authenticated via ML-DSA-65 certificate
 
 ── Phase 2: ML-KEM-768 key exchange ─────────────────────
-   ✅ Keypair: 3106.51 µs
+   ✅ Keypair: 4634.61 µs
    ✅ Public key sent (1184 bytes)
    ✅ Ciphertext received (1088 bytes)
-   ✅ Decapsulation: 67.78 µs
+   ✅ Decapsulation: 110.03 µs
 
 ── Phase 3: Session key derivation ──────────────────────
    ✅ Session key derived (AES-256)
@@ -332,49 +421,14 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📤 #1 48→89 |    IPv6 packet len=48
-📥 #1 48 bytes |    IPv6 packet len=48
-📤 #2 48→89 |    IPv6 packet len=48
-📤 #3 68→109 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=68
-📥 #2 68 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=68
-📤 #4 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #3 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #5 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #4 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #6 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #5 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #7 70→111 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=70
-📥 #6 158 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=158
-📤 #8 67→108 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=67
-📥 #7 67 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=67
-📤 #9 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #8 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #10 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #9 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #11 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #10 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #12 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #11 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #13 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #12 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #14 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #13 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #15 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #14 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #16 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #15 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #17 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
    ✅ Original routing restored
    ✅ DNS restored
 
-📊 sent=17 recv=15 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 6 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -402,7 +456,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 53102
+   ✅ Port 45546
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -411,16 +465,55 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 60999.89 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 117.66 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 7 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -448,7 +541,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 53360
+   ✅ Port 39101
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -457,16 +550,55 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 4463.33 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 84.70 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 8 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -494,7 +626,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 51981
+   ✅ Port 54194
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -503,10 +635,53 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 9341.95 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 88.34 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 9 ===
 ╔═══════════════════════════════════════════════════════════╗
@@ -536,7 +711,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 55050
+   ✅ Port 35947
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -550,10 +725,10 @@
 ✅ Server authenticated via ML-DSA-65 certificate
 
 ── Phase 2: ML-KEM-768 key exchange ─────────────────────
-   ✅ Keypair: 31439.67 µs
+   ✅ Keypair: 2976.91 µs
    ✅ Public key sent (1184 bytes)
    ✅ Ciphertext received (1088 bytes)
-   ✅ Decapsulation: 90.56 µs
+   ✅ Decapsulation: 60.38 µs
 
 ── Phase 3: Session key derivation ──────────────────────
    ✅ Session key derived (AES-256)
@@ -586,50 +761,14 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📤 #1 48→89 |    IPv6 packet len=48
-📥 #1 48 bytes |    IPv6 packet len=48
-📤 #2 48→89 |    IPv6 packet len=48
-📤 #3 68→109 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=68
-📥 #2 68 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=68
-📤 #4 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #3 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #5 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #4 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #6 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #5 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #7 70→111 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=70
-📥 #6 158 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=158
-📤 #8 67→108 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=67
-📥 #7 67 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=67
-📤 #9 118�   ⚠️  Command failed: ip route del default via 10.8.0.1 dev tun1 metric 50 2>/dev/null || true
-�159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #8 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #10 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #9 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #11 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #10 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #12 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #11 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #13 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #12 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #14 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #13 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #15 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #14 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #16 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #15 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #17 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
    ✅ Original routing restored
    ✅ DNS restored
 
-📊 sent=17 recv=15 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 10 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -657,7 +796,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 54322
+   ✅ Port 45985
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -666,16 +805,56 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 3010.87 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 74.22 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 11 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
+   ⚠️  Command failed: ip route del default via 10.8.0.1 dev tun1 metric 50 2>/dev/null || true
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -703,7 +882,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 60080
+   ✅ Port 38863
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -712,16 +891,55 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 19138.39 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 88.65 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 12 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -749,7 +967,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 60825
+   ✅ Port 44718
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -758,10 +976,53 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 3448.95 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 79.19 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 13 ===
 ╔═══════════════════════════════════════════════════════════╗
@@ -791,7 +1052,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 54115
+   ✅ Port 56555
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -805,10 +1066,10 @@
 ✅ Server authenticated via ML-DSA-65 certificate
 
 ── Phase 2: ML-KEM-768 key exchange ─────────────────────
-   ✅ Keypair: 4400.94 µs
+   ✅ Keypair: 15684.72 µs
    ✅ Public key sent (1184 bytes)
    ✅ Ciphertext received (1088 bytes)
-   ✅ Decapsulation: 122.66 µs
+   ✅ Decapsulation: 61.88 µs
 
 ── Phase 3: Session key derivation ──────────────────────
    ✅ Session key derived (AES-256)
@@ -841,48 +1102,15 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📤 #1 48→89 |    IPv6 packet len=48
-📤 #2 48→89 |    IPv6 packet len=48
-📤 #3 68→109 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=68
-📥 #1 68 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=68
-📤 #4 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #2 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #5 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #3 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #6 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #4 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #7 70→111 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=70
-📤 #8 48→89 |    IPv6 packet len=48
-📥 #5 158 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=158
-📤 #9 67→108 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=67
-📥 #6 67 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=67
-📤 #10 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #7 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #11 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #8 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #12 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #9 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #13 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #10 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #14 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #11 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #15 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #12 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #16 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #13 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #17 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #14 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
 
 🧹 Restoring network...
    ✅ Original routing restored
    ✅ DNS restored
 
-📊 sent=17 recv=14 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 14 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
+   ⚠️  Command failed: ip route del default via 10.8.0.1 dev tun1 metric 50 2>/dev/null || true
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -910,7 +1138,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 47170
+   ✅ Port 41839
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -919,16 +1147,55 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 2962.79 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 74.11 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 15 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -956,7 +1223,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 43900
+   ✅ Port 54683
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -965,16 +1232,55 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 3245.61 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 76.80 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 16 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -1002,7 +1308,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 37613
+   ✅ Port 51183
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -1011,10 +1317,53 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 3437.98 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 84.35 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 17 ===
 ╔═══════════════════════════════════════════════════════════╗
@@ -1044,7 +1393,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 35428
+   ✅ Port 59753
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -1058,10 +1407,10 @@
 ✅ Server authenticated via ML-DSA-65 certificate
 
 ── Phase 2: ML-KEM-768 key exchange ─────────────────────
-   ✅ Keypair: 54178.64 µs
+   ✅ Keypair: 2993.21 µs
    ✅ Public key sent (1184 bytes)
    ✅ Ciphertext received (1088 bytes)
-   ✅ Decapsulation: 91.72 µs
+   ✅ Decapsulation: 92.31 µs
 
 ── Phase 3: Session key derivation ──────────────────────
    ✅ Session key derived (AES-256)
@@ -1094,49 +1443,14 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📤 #1 48→89 |    IPv6 packet len=48
-📥 #1 48 bytes |    IPv6 packet len=48
-📤 #2 48→89 |    IPv6 packet len=48
-📤 #3 68→109 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=68
-📥 #2 68 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=68
-📤 #4 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #3 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #5 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #4 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #6 69→110 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=69
-📥 #5 69 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=69
-📤 #7 70→111 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=70
-📥 #6 158 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=158
-📤 #8 67→108 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=67
-📥 #7 67 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=67
-📤 #9 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #8 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #10 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #9 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #11 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #10 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #12 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #11 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #13 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #12 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #14 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #13 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #15 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #14 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #16 118→159 |    IPv4 10.8.0.2 → 8.8.8.8  proto=UDP  len=118
-📥 #15 182 bytes |    IPv4 8.8.8.8 → 10.8.0.2  proto=UDP  len=182
-📤 #17 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
    ✅ Original routing restored
    ✅ DNS restored
 
-📊 sent=17 recv=15 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 18 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -1164,7 +1478,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 40336
+   ✅ Port 49006
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -1173,16 +1487,55 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 3326.66 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 72.33 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 19 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -1210,7 +1563,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 56923
+   ✅ Port 56892
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -1219,16 +1572,55 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 3093.63 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 114.38 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
 === Run 20 ===
-❌ cert: timeout waiting for certificate
-❌ cert: failed to receive server certificate
-❌ Certificate authentication failed
-❌ Handshake failed
 ╔═══════════════════════════════════════════════════════════╗
 ║        Post-Quantum VPN Client (ML-KEM-768)              ║
 ║        ML-DSA-65 Cert Auth + AES-256-GCM + Keepalive    ║
@@ -1256,7 +1648,7 @@
    ✅ Interface 'tun1' is up
 
 5️⃣  UDP socket...
-   ✅ Port 48042
+   ✅ Port 37316
 
 6️⃣  Connecting to 209.97.191.183:5555...
 
@@ -1265,8 +1657,51 @@
 ── Phase 1: Certificate authentication (ML-DSA-65) ──────
 🔑 Cert auth: sending client certificate...
    ✅ Client certificate sent (identity: 'client')
+   ✅ Server certificate received (identity: 'server')
+   ✅ Server certificate valid
+✅ Server authenticated via ML-DSA-65 certificate
+
+── Phase 2: ML-KEM-768 key exchange ─────────────────────
+   ✅ Keypair: 21804.62 µs
+   ✅ Public key sent (1184 bytes)
+   ✅ Ciphertext received (1088 bytes)
+   ✅ Decapsulation: 86.91 µs
+
+── Phase 3: Session key derivation ──────────────────────
+   ✅ Session key derived (AES-256)
+
+✅ Handshake complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7️⃣  Configuring routing...
+   ✅ Default route: default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+   ✅ Detected gateway: 10.0.2.2
+   ✅ Host route confirmed: 209.97.191.183 via 10.0.2.2 (bypasses tunnel)
+   ✅ Default route → tunnel (tun1 via 10.8.0.1)
+
+8️⃣  Configuring DNS...
+   ✅ DNS → 8.8.8.8
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VPN connected — all traffic routing through server
+
+   Client : 10.8.0.2 (tun1)
+   Server : 209.97.191.183:5555
+   Auth   : ML-DSA-65 certificates
+   DNS    : 8.8.8.8
+   KA     : every 10s, idle timeout 45s
+
+   Test:  curl ifconfig.me   → should show server IP
+          ping google.com    → should work
+
+   Ctrl+C to disconnect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 #1 48→89 |    IPv6 packet len=48
 
 🧹 Restoring network...
+   ✅ Original routing restored
+   ✅ DNS restored
 
-📊 sent=0 recv=0 keepalives=0 replays=0
+📊 sent=1 recv=0 keepalives=0 replays=0
 ✅ Stopped
