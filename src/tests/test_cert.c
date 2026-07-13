@@ -1,17 +1,8 @@
 #define _GNU_SOURCE
 // test_cert.c
 // Test suite for pqc_cert — ML-DSA-65 certificate system.
-//
-// Covers:
-//   - CA keypair generation
-//   - Certificate issuance and loading
-//   - Certificate verification (valid, tampered, expired, wrong CA)
-//   - Handshake simulation (server and client exchange)
-//
-// Build:
-//   make test_cert
-// Run:
-//   ./bin/test_cert
+// Fixed: uses chdir("/tmp") so cert functions write to /tmp,
+// never overwriting real project certificates.
 
 #define _POSIX_C_SOURCE 200809L
 
@@ -40,49 +31,34 @@ static int tests_failed = 0;
     do { tests_run++; printf("  %-60s", (name)); } while (0)
 
 #define PASS() \
-    do { tests_passed++; printf("✅ PASS\n"); } while (0)
+    do { tests_passed++; printf("\u2705 PASS\n"); } while (0)
 
 #define FAIL(reason) \
-    do { tests_failed++; printf("❌ FAIL — %s\n", (reason)); } while (0)
+    do { tests_failed++; printf("\u274c FAIL \u2014 %s\n", (reason)); } while (0)
 
 #define ASSERT(cond, reason) \
     do { if (!(cond)) { FAIL(reason); return; } } while (0)
 
 // ============================================================================
-// TEMP FILE PATHS  (cleaned up after each test)
+// TEMP FILE PATHS
+// All cert functions use path constants from pqc_cert.h (CA_KEY_PATH etc).
+// We chdir() to /tmp before any test runs so those constants resolve to
+// /tmp/ca_key.priv etc, never touching the real project certificates.
 // ============================================================================
 
-#define TEST_CA_KEY    "/tmp/test_ca_key.priv"
-#define TEST_CA_CERT   "/tmp/test_ca_cert.pub"
-#define TEST_SRV_CERT  "/tmp/test_server_cert.bin"
-#define TEST_SRV_KEY   "/tmp/test_server_key.priv"
-#define TEST_CLI_CERT  "/tmp/test_client_cert.bin"
-#define TEST_CLI_KEY   "/tmp/test_client_key.priv"
 #define TEST_CA2_KEY   "/tmp/test_ca2_key.priv"
 #define TEST_CA2_CERT  "/tmp/test_ca2_cert.pub"
 
-// Override the file path constants for testing by using direct file ops
-// The cert functions use the path constants from pqc_cert.h — we work
-// around this by calling the lower-level functions directly with
-// test paths, or by symlinking. For simplicity we use the real paths
-// in /tmp and call cert_issue / cert_load directly.
-
 static void cleanup_test_files(void) {
-    unlink(TEST_CA_KEY);
-    unlink(TEST_CA_CERT);
-    unlink(TEST_SRV_CERT);
-    unlink(TEST_SRV_KEY);
-    unlink(TEST_CLI_CERT);
-    unlink(TEST_CLI_KEY);
-    unlink(TEST_CA2_KEY);
-    unlink(TEST_CA2_CERT);
-    // Also clean up any files written to working directory by gen functions
+    // Remove files that cert functions write (now in /tmp because of chdir)
     unlink(CA_KEY_PATH);
     unlink(CA_CERT_PATH);
     unlink(SERVER_CERT_PATH);
     unlink(SERVER_KEY_PATH);
     unlink(CLIENT_CERT_PATH);
     unlink(CLIENT_KEY_PATH);
+    unlink(TEST_CA2_KEY);
+    unlink(TEST_CA2_CERT);
 }
 
 // ============================================================================
@@ -97,7 +73,6 @@ static void test_ca_generation(void) {
     int r = cert_generate_ca();
     ASSERT(r == 0, "cert_generate_ca returned non-zero");
 
-    // Both files must exist and be the right size
     FILE *f;
 
     f = fopen(CA_KEY_PATH, "rb");
@@ -105,16 +80,14 @@ static void test_ca_generation(void) {
     fseek(f, 0, SEEK_END);
     long key_size = ftell(f);
     fclose(f);
-    ASSERT(key_size == CERT_PRIVKEY_LEN,
-           "ca_key.priv wrong size");
+    ASSERT(key_size == CERT_PRIVKEY_LEN, "ca_key.priv wrong size");
 
     f = fopen(CA_CERT_PATH, "rb");
     ASSERT(f != NULL, "ca_cert.pub not created");
     fseek(f, 0, SEEK_END);
     long pub_size = ftell(f);
     fclose(f);
-    ASSERT(pub_size == CERT_PUBKEY_LEN,
-           "ca_cert.pub wrong size");
+    ASSERT(pub_size == CERT_PUBKEY_LEN, "ca_cert.pub wrong size");
 
     PASS();
 }
@@ -126,7 +99,6 @@ static void test_ca_pubkey_load(void) {
     int r = cert_load_ca_pubkey(pubkey);
     ASSERT(r == 0, "cert_load_ca_pubkey returned non-zero");
 
-    // Key must be non-zero
     int all_zero = 1;
     for (int i = 0; i < CERT_PUBKEY_LEN; i++)
         if (pubkey[i] != 0) { all_zero = 0; break; }
@@ -145,14 +117,12 @@ static void test_cert_issue_server(void) {
     int r = cert_issue("vpn-server", SERVER_CERT_PATH, SERVER_KEY_PATH);
     ASSERT(r == 0, "cert_issue returned non-zero for server");
 
-    // Certificate file must be exactly sizeof(pqc_cert_t)
     FILE *f = fopen(SERVER_CERT_PATH, "rb");
     ASSERT(f != NULL, "server_cert.bin not created");
     fseek(f, 0, SEEK_END);
     long size = ftell(f);
     fclose(f);
-    ASSERT((size_t)size == sizeof(pqc_cert_t),
-           "server_cert.bin wrong size");
+    ASSERT((size_t)size == sizeof(pqc_cert_t), "server_cert.bin wrong size");
 
     PASS();
 }
@@ -168,8 +138,7 @@ static void test_cert_issue_client(void) {
     fseek(f, 0, SEEK_END);
     long size = ftell(f);
     fclose(f);
-    ASSERT((size_t)size == sizeof(pqc_cert_t),
-           "client_cert.bin wrong size");
+    ASSERT((size_t)size == sizeof(pqc_cert_t), "client_cert.bin wrong size");
 
     PASS();
 }
@@ -181,11 +150,8 @@ static void test_cert_load(void) {
     int r = cert_load(SERVER_CERT_PATH, &cert);
     ASSERT(r == 0, "cert_load returned non-zero");
 
-    // Identity must match
-    ASSERT(strcmp(cert.identity, "vpn-server") == 0,
-           "identity field mismatch");
+    ASSERT(strcmp(cert.identity, "vpn-server") == 0, "identity field mismatch");
 
-    // Timestamps must be reasonable
     uint64_t issued_be, expires_be;
     memcpy(&issued_be,  &cert.issued_at,  8);
     memcpy(&expires_be, &cert.expires_at, 8);
@@ -193,12 +159,10 @@ static void test_cert_load(void) {
     uint64_t expires = be64toh(expires_be);
 
     time_t now = time(NULL);
-    ASSERT(issued  <= (uint64_t)now + 5,  "issued_at is in the future");
-    ASSERT(expires >  (uint64_t)now,      "expires_at is already past");
-    ASSERT(expires == issued + CERT_VALIDITY_SEC,
-           "validity window is wrong");
+    ASSERT(issued  <= (uint64_t)now + 5, "issued_at is in the future");
+    ASSERT(expires >  (uint64_t)now,     "expires_at is already past");
+    ASSERT(expires == issued + CERT_VALIDITY_SEC, "validity window is wrong");
 
-    // Public key must be non-zero
     int all_zero = 1;
     for (int i = 0; i < CERT_PUBKEY_LEN; i++)
         if (cert.public_key[i] != 0) { all_zero = 0; break; }
@@ -249,8 +213,6 @@ static void test_verify_tampered_identity(void) {
 
     pqc_cert_t cert;
     ASSERT(cert_load(SERVER_CERT_PATH, &cert) == 0, "cert load failed");
-
-    // Modify the identity — the CA signature no longer covers this content
     cert.identity[0] ^= 0xFF;
 
     int r = cert_verify(&cert, ca_pubkey);
@@ -267,8 +229,6 @@ static void test_verify_tampered_pubkey(void) {
 
     pqc_cert_t cert;
     ASSERT(cert_load(SERVER_CERT_PATH, &cert) == 0, "cert load failed");
-
-    // Flip a byte in the public key
     cert.public_key[100] ^= 0x01;
 
     int r = cert_verify(&cert, ca_pubkey);
@@ -285,8 +245,6 @@ static void test_verify_tampered_signature(void) {
 
     pqc_cert_t cert;
     ASSERT(cert_load(SERVER_CERT_PATH, &cert) == 0, "cert load failed");
-
-    // Corrupt the signature
     cert.signature[0] ^= 0xFF;
     cert.signature[1] ^= 0xFF;
 
@@ -299,28 +257,20 @@ static void test_verify_tampered_signature(void) {
 static void test_verify_wrong_ca(void) {
     TEST("Verify: certificate signed by different CA fails verification");
 
-    // Generate a second CA
-    // We do this by temporarily swapping the CA paths — save originals,
-    // generate new CA, verify with new CA pubkey, then restore.
-    // Simpler: just generate a fresh CA pubkey and try to verify with it.
+    // Save original CA files, generate a second CA, verify against it
+    rename(CA_KEY_PATH,  TEST_CA2_KEY);
+    rename(CA_CERT_PATH, TEST_CA2_CERT);
 
-    // Rename existing CA files out of the way
-    rename(CA_KEY_PATH,  TEST_CA_KEY);
-    rename(CA_CERT_PATH, TEST_CA_CERT);
-
-    // Generate a second CA
     int r = cert_generate_ca();
     ASSERT(r == 0, "second CA generation failed");
 
-    // Load the second CA's public key
     uint8_t ca2_pubkey[CERT_PUBKEY_LEN];
     ASSERT(cert_load_ca_pubkey(ca2_pubkey) == 0, "CA2 pubkey load failed");
 
-    // Restore original CA files
-    rename(TEST_CA_KEY,  CA_KEY_PATH);
-    rename(TEST_CA_CERT, CA_CERT_PATH);
+    // Restore original CA
+    rename(TEST_CA2_KEY,  CA_KEY_PATH);
+    rename(TEST_CA2_CERT, CA_CERT_PATH);
 
-    // The server cert was signed by CA1 — verifying with CA2 must fail
     pqc_cert_t cert;
     ASSERT(cert_load(SERVER_CERT_PATH, &cert) == 0, "cert load failed");
 
@@ -339,12 +289,7 @@ static void test_verify_expired_cert(void) {
     pqc_cert_t cert;
     ASSERT(cert_load(SERVER_CERT_PATH, &cert) == 0, "cert load failed");
 
-    // Manually set expires_at to the past
-    // We need to re-sign this to make it a valid-but-expired cert,
-    // OR we just manipulate the timestamp and confirm the expiry check
-    // catches it before the signature check.
-    // Since cert_verify checks expiry FIRST, we just set the timestamp.
-    uint64_t past = htobe64((uint64_t)(time(NULL) - 3600)); // 1 hour ago
+    uint64_t past = htobe64((uint64_t)(time(NULL) - 3600));
     memcpy(&cert.expires_at, &past, 8);
 
     int r = cert_verify(&cert, ca_pubkey);
@@ -372,17 +317,9 @@ static void test_client_cert_also_verifies(void) {
 // HANDSHAKE SIMULATION
 // ============================================================================
 
-// We simulate the cert handshake using a socketpair (two connected sockets).
-// This avoids needing a real network and lets us test the handshake
-// functions directly without spinning up threads.
-//
-// However cert_handshake_server and cert_handshake_client both block
-// waiting for the peer, so we need two threads.
-
 typedef struct {
     int        sock;
     int        result;
-    int        is_server;
     uint8_t    ca_pubkey[CERT_PUBKEY_LEN];
 } handshake_arg_t;
 
@@ -421,7 +358,6 @@ static void test_handshake_valid(void) {
     uint8_t ca_pubkey[CERT_PUBKEY_LEN];
     ASSERT(cert_load_ca_pubkey(ca_pubkey) == 0, "CA pubkey load failed");
 
-    // Create server UDP socket
     int srv_sock = socket(AF_INET, SOCK_DGRAM, 0);
     ASSERT(srv_sock >= 0, "server socket creation failed");
 
@@ -436,7 +372,6 @@ static void test_handshake_valid(void) {
     ASSERT(bind(srv_sock, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) == 0,
            "server bind failed");
 
-    // Create client UDP socket
     int cli_sock = socket(AF_INET, SOCK_DGRAM, 0);
     ASSERT(cli_sock >= 0, "client socket creation failed");
 
@@ -480,8 +415,8 @@ static void test_cert_print(void) {
     ASSERT(cert_load(SERVER_CERT_PATH, &cert) == 0, "cert load failed");
 
     printf("\n");
-    cert_print(&cert);    // Just verify it doesn't crash
-    printf("  %-60s", ""); // Re-align for PASS marker
+    cert_print(&cert);
+    printf("  %-60s", "");
 
     PASS();
 }
@@ -491,24 +426,36 @@ static void test_cert_print(void) {
 // ============================================================================
 
 int main(void) {
-    printf("╔══════════════════════════════════════════════════════════════╗\n");
-    printf("║          PQ-VPN Certificate Test Suite (ML-DSA-65)         ║\n");
-    printf("╚══════════════════════════════════════════════════════════════╝\n\n");
+    printf("\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n");
+    printf("\u2551          PQ-VPN Certificate Test Suite (ML-DSA-65)         \u2551\n");
+    printf("\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n\n");
+
+    // -----------------------------------------------------------------------
+    // IMPORTANT: chdir to /tmp before any test runs.
+    // cert_generate_ca(), cert_issue() and cert_load() all use path
+    // constants from pqc_cert.h (CA_KEY_PATH = "ca_key.priv" etc).
+    // By changing to /tmp first, all those writes go to /tmp/ca_key.priv
+    // etc, leaving the real project certificate files completely untouched.
+    // -----------------------------------------------------------------------
+    if (chdir("/tmp") != 0) {
+        fprintf(stderr, "\u274c Failed to chdir to /tmp\n");
+        return 1;
+    }
 
     // Clean slate
     cleanup_test_files();
 
-    printf("── CA generation ────────────────────────────────────────────────\n");
+    printf("\u2500\u2500 CA generation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n");
     test_ca_generation();
     test_ca_pubkey_load();
 
-    printf("\n── Certificate issuance ─────────────────────────────────────────\n");
+    printf("\n\u2500\u2500 Certificate issuance \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n");
     test_cert_issue_server();
     test_cert_issue_client();
     test_cert_load();
     test_two_certs_differ();
 
-    printf("\n── Certificate verification ─────────────────────────────────────\n");
+    printf("\n\u2500\u2500 Certificate verification \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n");
     test_verify_valid_cert();
     test_verify_tampered_identity();
     test_verify_tampered_pubkey();
@@ -517,16 +464,16 @@ int main(void) {
     test_verify_expired_cert();
     test_client_cert_also_verifies();
 
-    printf("\n── Handshake simulation ─────────────────────────────────────────\n");
+    printf("\n\u2500\u2500 Handshake simulation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n");
     test_handshake_valid();
 
-    printf("\n── Utility ──────────────────────────────────────────────────────\n");
+    printf("\n\u2500\u2500 Utility \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n");
     test_cert_print();
 
-    // Clean up temp files
+    // Clean up temp files in /tmp
     cleanup_test_files();
 
-    printf("\n════════════════════════════════════════════════════════════════\n");
+    printf("\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n");
     printf("Results: %d/%d passed", tests_passed, tests_run);
     if (tests_failed > 0)
         printf("  (%d FAILED)", tests_failed);
