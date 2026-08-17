@@ -1,93 +1,94 @@
-# PQ-VPN — Post-Quantum VPN
+# PQ-VPN — Post-Quantum Virtual Private Network
 
-A research implementation of a post-quantum secure VPN tunnel, built from scratch in C as an MSc dissertation project.
+A fully functional VPN implemented in C using two NIST post-quantum cryptography standards finalised in August 2024:
 
-Uses **ML-KEM-768** (NIST FIPS 203) for key exchange and **AES-256-GCM** for symmetric encryption, providing security against both classical and quantum adversaries.
+- **ML-KEM-768** (FIPS 203) — ephemeral key exchange
+- **ML-DSA-65** (FIPS 204) — mutual certificate authentication
+- **AES-256-GCM** — symmetric tunnel encryption
+- **HKDF-SHA256** (RFC 5869) — session key derivation
+- **RFC 4303** sliding-window replay protection
 
----
-
-## Why Post-Quantum?
-
-Classical VPNs (WireGuard, OpenVPN) use elliptic-curve Diffie-Hellman for key exchange. This is broken by Shor's algorithm on a quantum computer. Nation-state adversaries are already recording encrypted traffic today to decrypt later once quantum computers mature — the **harvest now, decrypt later** attack.
-
-This project replaces the vulnerable key exchange with ML-KEM-768, standardised by NIST in August 2024 as the first post-quantum KEM standard, while keeping AES-256-GCM for symmetric encryption (Grover's algorithm only gives a quadratic speedup against symmetric crypto, so 256-bit keys remain secure).
+Built as an MSc Cyber Security dissertation project at Coventry University. The system has been deployed and verified end-to-end on a real public cloud VM: `curl ifconfig.me` returns the server's IP while connected.
 
 ---
 
-## Security Architecture
+## Table of Contents
+
+- [Why post-quantum?](#why-post-quantum)
+- [Architecture](#architecture)
+- [Requirements](#requirements)
+- [Building](#building)
+- [Certificate setup](#certificate-setup)
+- [Running the server](#running-the-server)
+- [Connecting a client](#connecting-a-client)
+- [Verification](#verification)
+- [Running tests](#running-tests)
+- [Benchmarking](#benchmarking)
+- [Project structure](#project-structure)
+- [Known limitations](#known-limitations)
+- [Security notes](#security-notes)
+
+---
+
+## Why post-quantum?
+
+Classical VPN protocols (WireGuard, IPsec, OpenVPN) use ECDH and ECDSA — both broken by Shor's algorithm on a sufficiently large quantum computer. The "harvest now, decrypt later" threat means adversaries can record today's VPN traffic and decrypt it once quantum computers mature.
+
+NIST finalised ML-KEM and ML-DSA in August 2024. This project implements both in a working, deployed VPN — demonstrating that the engineering cost of migration is practical.
+
+---
+
+## Architecture
 
 ```
 Client                                    Server
 ──────                                    ──────
-1. PSK mutual authentication    ←────→    HMAC-SHA256 challenge-response
-2. ML-KEM-768 key exchange      ←────→    Encapsulation / Decapsulation
-3. HKDF-SHA256 key derivation   ══════    Both derive same AES-256 key
-4. AES-256-GCM tunnel           ←────→    Counter nonces + replay protection
+Phase 1: Certificate exchange (ML-DSA-65)
+  client_cert.bin  ──────────────────────►  verify against ca_cert.pub
+  ca_cert.pub      ◄──────────────────────  server_cert.bin
+
+Phase 2: Key encapsulation (ML-KEM-768)
+  fresh keypair generated
+  public key       ──────────────────────►  encapsulate → ciphertext
+                   ◄──────────────────────  ciphertext
+  decapsulate → shared_secret              shared_secret (identical)
+
+Phase 3: Session key derivation
+  HKDF-SHA256(shared_secret, "vpn-session-key") → 32-byte AES key
+
+Tunnel: AES-256-GCM, counter-based nonces, RFC 4303 replay protection
+  encrypted packets ◄────────────────────► encrypted packets
+  keepalive every 10s, idle disconnect at 45s
 ```
 
-| Component | Algorithm | Standard |
-|-----------|-----------|----------|
-| Key exchange | ML-KEM-768 | NIST FIPS 203 (2024) |
-| Symmetric encryption | AES-256-GCM | NIST FIPS 197 |
-| Key derivation | HKDF-SHA256 | RFC 5869 |
-| Authentication | HMAC-SHA256 PSK | RFC 2104 |
-| Replay protection | Sliding window | RFC 4303 |
-| Nonce generation | Counter-based | — |
-
-**Security properties:**
-- Quantum-resistant key exchange (ML-KEM-768, NIST FIPS 203)
-- Authenticated encryption (AES-256-GCM — confidentiality + integrity)
-- Mutual authentication (both sides prove PSK knowledge before key exchange)
-- Forward secrecy (per-session ephemeral keys)
-- Replay attack prevention (64-packet RFC 4303 sliding window)
-- Nonce uniqueness guaranteed (counter + random prefix, no birthday bound risk)
+Up to **8 simultaneous clients** are supported. Each client gets its own dedicated POSIX thread with fully isolated cryptographic state.
 
 ---
 
-## Project Structure
+## Requirements
 
-```
-pqvpn/
-├── Makefile
-├── psk.conf              ← generated locally, never committed
-├── server_setup.sh       ← one-time NAT/routing setup
-│
-└── src/
-    ├── common/
-    │   ├── pqc_common.h/c      HKDF, nonce management, replay protection
-    │   ├── pqc_crypto.h/c      AES-256-GCM encrypt/decrypt
-    │   ├── pqc_auth.h/c        PSK mutual authentication
-    │   └── gen_psk_main.c      PSK generator utility
-    │
-    ├── vpn/
-    │   ├── tun.h/c             TUN interface (create, configure, read/write)
-    │   ├── udp_support.h/c     UDP socket layer
-    │   ├── vpn_server.c        VPN server (single client)
-    │   └── vpn_client.c        VPN client (routing + DNS management)
-    │
-    └── tests/
-        ├── test_foundation.c   HKDF, nonce, AES-GCM, I/O tests
-        ├── test_auth.c         PSK loading, MAC, domain separation tests
-        └── test_replay.c       Sliding window replay protection tests
-```
+### Build dependencies
 
----
+| Dependency | Purpose | Version |
+|---|---|---|
+| gcc | C11 compiler | ≥ 9 |
+| liboqs | ML-KEM-768, ML-DSA-65 | ≥ 0.10 |
+| OpenSSL | AES-256-GCM, HKDF, X25519/ECDSA (benchmarks) | ≥ 3.0 |
+| cmake + ninja | Required to build liboqs from source | any |
+| pthread | POSIX threads for multi-client support | system |
 
-## Dependencies
+### Runtime requirements
 
-| Dependency | Purpose | Install |
-|------------|---------|---------|
-| liboqs | ML-KEM-768 (Open Quantum Safe) | Build from source |
-| libssl / libcrypto | AES-GCM, HMAC, HKDF, RAND | `apt install libssl-dev` |
-| Linux kernel | TUN/TAP driver | `modprobe tun` |
+- Linux (TUN/TAP kernel support required)
+- Root or `CAP_NET_ADMIN` capability (TUN interface creation)
+- UDP port 5555 open on the server firewall
 
-### Installing liboqs (Open Quantum Safe)
+### Installing liboqs from source
 
 ```bash
-# Install build dependencies
-sudo apt install cmake gcc ninja-build libssl-dev
+sudo apt update
+sudo apt install -y git cmake ninja-build gcc libssl-dev
 
-# Clone and build liboqs
 git clone https://github.com/open-quantum-safe/liboqs.git
 cd liboqs
 mkdir build && cd build
@@ -95,7 +96,6 @@ cmake -GNinja -DCMAKE_INSTALL_PREFIX=/usr/local ..
 ninja
 sudo ninja install
 sudo ldconfig
-
 cd ../..
 ```
 
@@ -104,214 +104,359 @@ cd ../..
 ## Building
 
 ```bash
-# Clone the repository
 git clone https://github.com/YOUR_USERNAME/pqvpn.git
 cd pqvpn
 
-# Run all tests first
-make tests
-
-# Build server, client, and PSK generator
+# Build everything: server, client, tools, tests, benchmarks
 make all
+
+# Or build specific targets
+make bin/vpn_server
+make bin/vpn_client
+make bin/bench_crypto
 ```
 
-Expected test output:
-```
-Results: 18/18 passed   (foundation)
-Results: 11/11 passed   (auth)
-Results: 12/12 passed   (replay)
-```
+All binaries are placed in `bin/`.
 
 ---
 
-## Quick Start
+## Certificate setup
 
-### Step 1 — Generate a shared PSK
+The certificate system uses a two-tier hierarchy. Run these steps once before starting the server for the first time.
 
-Run this once. Copy `psk.conf` to both machines before starting.
+### Step 1 — Generate the CA keypair
 
 ```bash
-sudo ./bin/gen_psk
-chmod 600 psk.conf
+sudo ./bin/gen_ca
 ```
 
-`psk.conf` contains a 256-bit random key in hex. **Keep it secret — treat it like a private key. Never commit it to version control.**
+Creates:
+- `ca_key.priv` — CA private key. **Keep this secret. Never distribute it.**
+- `ca_cert.pub` — CA public key. Copy this to all servers and all clients.
 
-### Step 2 — Server setup (run once after first boot)
+### Step 2 — Issue the server certificate
 
 ```bash
-# Enables IP forwarding and NAT so client traffic reaches the internet
+sudo ./bin/gen_cert server
+```
+
+Creates `server_cert.bin` and `server_key.priv`. Both stay on the server.
+
+### Step 3 — Issue client certificates
+
+```bash
+sudo ./bin/gen_cert alice
+sudo ./bin/gen_cert bob
+```
+
+Creates per-identity certificates. Distribute each set to the client:
+
+```bash
+# Each client needs these three files:
+scp ca_cert.pub alice_cert.bin alice_key.priv alice@client-machine:~/pqvpn/
+```
+
+### Certificate file reference
+
+| File | Who needs it | Secret? |
+|---|---|---|
+| `ca_key.priv` | Server only (CA operations) | ✅ Yes |
+| `ca_cert.pub` | Server + every client | No |
+| `server_cert.bin` | Server | No |
+| `server_key.priv` | Server | ✅ Yes |
+| `alice_cert.bin` | Alice's machine | No |
+| `alice_key.priv` | Alice's machine | ✅ Yes |
+
+Certificates are valid for **365 days**. Re-run `gen_cert` when they expire.
+
+---
+
+## Running the server
+
+### One-time server setup
+
+```bash
+# Enables IP forwarding and configures NAT so client traffic reaches the internet
 sudo ./server_setup.sh
-
-# To undo:
-sudo ./server_setup.sh --undo
 ```
 
-### Step 3 — Start the server
+### Start the server
 
 ```bash
 sudo ./bin/vpn_server
 ```
 
-### Step 4 — Connect the client
+The server binds to `0.0.0.0:5555/UDP` and accepts up to 8 simultaneous clients.
 
-Before connecting, set the server IP in `src/vpn/vpn_client.c`:
-
-```c
-#define SERVER_IP  "YOUR_SERVER_IP"
-```
-
-Then rebuild and connect:
+### Cloud deployment (fresh Ubuntu 22.04 VM)
 
 ```bash
-make all
-sudo ./bin/vpn_client
+# 1. Install dependencies
+sudo apt update && apt install -y git cmake ninja-build gcc libssl-dev
+
+# 2. Build liboqs (see Requirements above)
+
+# 3. Clone and build
+git clone https://github.com/YOUR_USERNAME/pqvpn.git
+cd pqvpn && make all
+
+# 4. Copy server certificates from your local machine
+scp ca_cert.pub server_cert.bin root@YOUR_SERVER_IP:~/pqvpn/
+sudo scp server_key.priv root@YOUR_SERVER_IP:~/pqvpn/
+
+# 5. Open firewall
+ufw allow 5555/udp && ufw enable
+
+# 6. Run setup script and start server
+sudo ./server_setup.sh
+sudo ./bin/vpn_server
 ```
 
-The client automatically:
-- Saves your existing default route
-- Routes all traffic through the VPN tunnel after a successful handshake
-- Sets DNS to 8.8.8.8 through the tunnel
-- Restores your original route and DNS on disconnect (Ctrl+C)
-
-### Step 5 — Verify
+### Run as a background process
 
 ```bash
-# Should show the server's IP, not your own
+sudo ./bin/vpn_server > /tmp/vpn_server.log 2>&1 &
+echo "Server PID: $!"
+tail -f /tmp/vpn_server.log
+```
+
+---
+
+## Connecting a client
+
+### Connect to a remote server
+
+```bash
+sudo ./bin/vpn_client --server YOUR_SERVER_IP
+```
+
+### All options
+
+```
+--server IP    VPN server IP address (default: 127.0.0.1)
+--tun NAME     TUN interface name (default: tun1)
+--ip IP        Client tunnel IP address (default: 10.8.0.2)
+--cert PATH    Client certificate file (default: client_cert.bin)
+--help         Show usage
+```
+
+### Multiple clients on the same machine
+
+Use different `--tun` and `--ip` values:
+
+```bash
+# Client 1
+sudo ./bin/vpn_client --server 203.0.113.1
+
+# Client 2
+sudo ./bin/vpn_client --server 203.0.113.1 \
+  --tun tun2 --ip 10.8.0.3 --cert bob_cert.bin
+```
+
+### What the client does automatically
+
+On connect:
+1. Verifies client certificate against CA public key
+2. Completes ML-DSA-65 mutual certificate handshake with server
+3. Generates fresh ML-KEM-768 keypair; server encapsulates shared secret
+4. Derives AES-256-GCM session key via HKDF-SHA256
+5. Saves current default route and gateway
+6. Adds host route for VPN server IP via real gateway (prevents routing loop)
+7. Sets tunnel as default route — all traffic exits via server
+8. Updates DNS to 8.8.8.8
+
+On disconnect (Ctrl+C):
+- Original routing table restored
+- DNS restored from backup
+- Session statistics printed
+
+---
+
+## Verification
+
+After connecting, confirm your traffic is exiting via the VPN:
+
+```bash
+# Should return the server's public IP, not your own
 curl ifconfig.me
 
-# Should resolve and get replies through the tunnel
-ping google.com
+# Ping the server's tunnel interface
+ping -c 5 10.8.0.1
 
-# Tunnel ping
-ping 10.8.0.1
+# Confirm internet access through the tunnel
+curl https://api.ipify.org
 ```
 
 ---
 
-## Network Configuration
-
-| Address | Purpose |
-|---------|---------|
-| `10.8.0.1` | Server TUN interface |
-| `10.8.0.2` | Client TUN interface |
-| UDP `5555` | VPN tunnel port |
-| `8.8.8.8` | DNS pushed to client |
-
-To change any of these, edit the `#define` constants at the top of `vpn_server.c` and `vpn_client.c` and rebuild.
-
----
-
-## Running Tests
+## Running tests
 
 ```bash
-# All tests
-make tests
+# All 56 tests across four suites
+sudo make tests
 
 # Individual suites
-make test_foundation    # HKDF, nonces, AES-GCM, I/O
-make test_auth          # PSK loading, key derivation, MAC
-make test_replay        # Sliding window, bitmap, boundary cases
+sudo make test_foundation   # 18 tests: HKDF, nonces, AES-GCM, I/O helpers
+sudo make test_auth         # 11 tests: PSK authentication
+sudo make test_replay       # 12 tests: RFC 4303 replay protection
+sudo make test_cert         # 15 tests: ML-DSA-65 certificate system
 ```
 
-Tests do not require root and do not need liboqs — they cover the common cryptographic layer only.
+Tests write temporary files to `/tmp/` and never touch your real certificate files.
 
----
-
-## Packet Format
-
-Every VPN data packet has a 36-byte header:
+Expected output:
 
 ```
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-├───────────────────────────────────────────────────────────────────┤
-│                    Sequence Number (64-bit BE)                    │
-├───────────────────────────────────────────────────────────────────┤
-│                        IV / Nonce (96-bit)                        │
-├───────────────────────────────────────────────────────────────────┤
-│                    Authentication Tag (128-bit)                   │
-├───────────────────────────────────────────────────────────────────┤
-│                    Ciphertext (variable)                          │
-└───────────────────────────────────────────────────────────────────┘
-```
-
-Overhead: **36 bytes per packet** (8 seq + 12 IV + 16 tag).
-
----
-
-## Handshake Protocol
-
-```
-Client                                          Server
-──────                                          ──────
-
-── Phase 1: Mutual Authentication ──────────────────────────────────
-  generate client_challenge (32B random)
-  send client_challenge              ─────────>
-                                                compute server_mac =
-                                                  HMAC(auth_key,
-                                                    "server"||challenge)
-                                                generate server_challenge
-                                     <─────────  send server_mac||server_challenge
-  verify server_mac
-  compute client_mac =
-    HMAC(auth_key, "client"||server_challenge)
-  send client_mac                    ─────────>
-                                                verify client_mac
-                                                ✅ client authenticated
-
-── Phase 2: ML-KEM-768 Key Exchange ─────────────────────────────────
-  generate keypair (pk, sk)
-  send pk                            ─────────>
-                                                encaps(pk) → (ciphertext, ss)
-                                     <─────────  send ciphertext
-  decaps(ciphertext, sk) → ss
-
-── Phase 3: Session Key Derivation ──────────────────────────────────
-  HKDF(ss, info="vpn-session-key")  ══════════  HKDF(ss, info="vpn-session-key")
-           └─── AES-256 session key ════════════ AES-256 session key ───┘
+Results: 18/18 passed
+Results: 11/11 passed
+Results: 12/12 passed
+Results: 15/15 passed
+All test suites completed
 ```
 
 ---
 
-## Limitations and Future Work
+## Benchmarking
 
-This is a research prototype. Current known limitations:
+### Primitive-level benchmark
 
-- **Single client** — server accepts one connection at a time. Multi-client session management (`session.h/session.c`) is designed but not yet implemented.
-- **PSK authentication** — production deployment would replace PSK with ML-DSA-65 certificate-based authentication (NIST FIPS 204) for scalable user onboarding.
-- **No key rotation** — session keys are fixed for the duration of a connection. Long sessions should re-key periodically.
-- **Linux only** — uses Linux TUN/TAP and `ip`/`iptables` for routing. macOS/Windows support would require platform-specific tunnel drivers.
+Compares ML-KEM-768 vs X25519, ML-DSA-65 vs ECDSA-P256, and AES-256-GCM throughput.
 
-Planned extensions:
-1. ML-DSA-65 certificate authentication (FIPS 204) replacing PSK
-2. Multi-client session table
-3. Session re-keying
-4. Cloud VM deployment with public IP
-5. Performance benchmarking vs WireGuard and OpenVPN
+```bash
+# Local machine
+make bench
+# or with custom tag and output:
+./bin/bench_crypto --tag local --output local_results.csv
+
+# Cloud VM (run the binary directly with the cloud tag)
+./bin/bench_crypto --tag cloud --output cloud_results.csv
+```
+
+Output: CSV with min/max/mean/median/stddev for each operation across 500–2000 iterations.
+
+### End-to-end handshake benchmark
+
+Measures real connection timing over the public internet.
+
+```bash
+chmod +x benchmarks/bench_handshake.sh
+
+# Run 20 connection attempts against the cloud server
+./benchmarks/bench_handshake.sh YOUR_SERVER_IP 20
+
+# Parse the results
+python3 benchmarks/parse_handshake_log.py handshake_log.txt
+```
+
+> **Note:** requires a 50-second cooldown between runs. See [Known limitations](#known-limitations).
+
+---
+
+## Project structure
+
+```
+pqvpn/
+├── src/
+│   ├── common/
+│   │   ├── pqc_common.h/c      HKDF-SHA256, nonce management, replay window,
+│   │   │                       packet header definition, I/O helpers
+│   │   ├── pqc_crypto.h/c      AES-256-GCM encrypt/decrypt
+│   │   ├── pqc_auth.h/c        PSK mutual authentication (baseline)
+│   │   ├── pqc_cert.h/c        ML-DSA-65 certificate authority, issuance,
+│   │   │                       verification, mutual handshake
+│   │   ├── gen_psk_main.c      Generates random PSK file
+│   │   ├── gen_ca_main.c       Generates CA keypair
+│   │   └── gen_cert_main.c     Issues a signed identity certificate
+│   ├── vpn/
+│   │   ├── tun.h/c             TUN interface lifecycle, MTU-enforced I/O
+│   │   ├── udp_support.h/c     UDP socket, send/recv with timeout
+│   │   ├── session.h/c         Multi-client session table, per-thread crypto state
+│   │   ├── vpn_server.c        Server: cert auth loop, spawns worker thread per client
+│   │   └── vpn_client.c        Client: cert auth, KEM, tunnel, routing, DNS
+│   ├── tests/
+│   │   ├── test_foundation.c   18 tests: HKDF, nonce, AES-GCM, I/O
+│   │   ├── test_auth.c         11 tests: PSK authentication
+│   │   ├── test_replay.c       12 tests: replay protection
+│   │   └── test_cert.c         15 tests: ML-DSA-65 certificate system
+│   └── bench/
+│       ├── bench_common.h/c    Timing, statistics, CSV export
+│       ├── bench_kem.c         ML-KEM-768 vs X25519 benchmark
+│       ├── bench_sig.c         ML-DSA-65 vs ECDSA-P256 benchmark
+│       ├── bench_aead.c        AES-256-GCM throughput at 64/576/1400 B
+│       └── bench_main.c        Orchestrator, CLI, tagged CSV output
+├── benchmarks/
+│   ├── bench_handshake.sh      Real handshake timing over public internet
+│   └── parse_handshake_log.py  Parses handshake log to statistics CSV
+├── server_setup.sh             One-command NAT + IP forwarding on server
+├── Makefile
+├── .gitignore                  Excludes *.priv, cert files from version control
+├── README.md
+└── SECURITY.md
+```
+
+### Packet format
+
+Every tunnel packet has a fixed 41-byte header:
+
+```
+ 0       4   5       13      25      41
+ ┌───────┬───┬───────┬───────┬───────┬──────────────┐
+ │ magic │ T │  seq  │  IV   │  tag  │  ciphertext  │
+ │ 4 B   │1 B│ 8 B   │ 12 B  │ 16 B  │  ≤ 1400 B   │
+ └───────┴───┴───────┴───────┴───────┴──────────────┘
+```
+
+| Field | Size | Purpose |
+|---|---|---|
+| magic | 4 B | `0x50515643` ("PQVC") — discards stale/foreign packets |
+| type | 1 B | `0x01` = data, `0x02` = keepalive |
+| seq | 8 B | Big-endian uint64 counter for RFC 4303 replay detection |
+| IV | 12 B | 32-bit session random prefix + 64-bit monotonic counter |
+| tag | 16 B | AES-256-GCM authentication tag |
+| ciphertext | ≤ 1400 B | Encrypted IP packet payload |
+
+---
+
+## Known limitations
+
+**Manual certificate distribution.** Each new client requires you to run `gen_cert`, then copy three files out-of-band. A production system would add a web portal for automated provisioning. This is documented as future work.
+
+**Same-machine multi-client UDP contention.** Two clients from the same machine (same source IP) share one UDP socket and can race for each other's packets. Clients from separate machines work correctly. This is an architectural constraint of the shared UDP port design.
+
+**50-second reconnect cooldown for the benchmark script.** The server uses a 45-second idle timer to detect disconnects (UDP is connectionless — there is no disconnect signal). Rapid scripted reconnection therefore requires a 50-second gap between attempts.
+
+**No IPv6 tunnel support.** The data plane handles IPv4 packets only.
+
+**OpenSSL 3.0 HMAC deprecation warnings.** `pqc_common.c` and `pqc_auth.c` use the legacy `HMAC_CTX_*` API which is deprecated in OpenSSL 3.0. These are compile-time warnings only — the code is functionally correct.
+
+---
+
+## Security notes
+
+See [SECURITY.md](SECURITY.md) for the full security design documentation, threat model, and known constraints.
+
+Quick summary:
+
+- ML-KEM-768: NIST Category 3 post-quantum security (≈ 192-bit classical equivalent)
+- ML-DSA-65: NIST Category 3 post-quantum security for authentication
+- AES-256-GCM: 128-bit authenticated encryption, information-theoretically secure nonces
+- HKDF-SHA256: cryptographic domain separation between KEM output and session key
+- RFC 4303 replay window: 64-packet bitmap, rejects duplicates and large forward jumps
 
 ---
 
 ## References
 
-- NIST FIPS 203 — ML-KEM Standard (2024): https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
-- Bos et al. — CRYSTALS-Kyber: https://eprint.iacr.org/2017/634.pdf
-- Shor (1994) — Quantum algorithm for discrete logarithms
-- Mosca (2018) — Cybersecurity in an era with quantum computers
-- RFC 5869 — HKDF: https://www.rfc-editor.org/rfc/rfc5869
-- RFC 4303 — IPsec ESP (replay protection): https://www.rfc-editor.org/rfc/rfc4303
-- Open Quantum Safe / liboqs: https://openquantumsafe.org
-- Donenfeld (2017) — WireGuard: https://www.wireguard.com/papers/wireguard.pdf
+- [NIST FIPS 203 — ML-KEM](https://doi.org/10.6028/NIST.FIPS.203)
+- [NIST FIPS 204 — ML-DSA](https://doi.org/10.6028/NIST.FIPS.204)
+- [liboqs — Open Quantum Safe project](https://github.com/open-quantum-safe/liboqs)
+- [RFC 5869 — HKDF-SHA256](https://datatracker.ietf.org/doc/html/rfc5869)
+- [RFC 4303 — IPsec ESP replay protection](https://datatracker.ietf.org/doc/html/rfc4303)
+- [WireGuard paper — Donenfeld (2017)](https://www.wireguard.com/papers/wireguard.pdf)
+- [CRYSTALS-Kyber paper — Bos et al. (2018)](https://doi.org/10.1109/EuroSP.2018.00032)
 
 ---
 
-## Academic Context
+## Licence
 
-This project was developed as an MSc dissertation exploring the practical implementation of post-quantum cryptography in network applications. The primary research question is whether NIST-standardised post-quantum primitives can be integrated into a functional VPN with acceptable performance overhead — addressing the harvest-now-decrypt-later threat against classical VPN deployments.
-
----
-
-## License
-
-Research and educational use. See LICENSE for details.
+MIT — see LICENSE file.
